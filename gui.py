@@ -27,6 +27,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.state = STATE_PAUSED
 
         self.image_frame = QLabel()
+        self.image_frame.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
 
         # open video source
         self.video_source = ''  # r'm:\work\iCoder\sample_data\CueCue_108.mov'
@@ -75,6 +76,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Create a widget for window contents
         wid = QtWidgets.QWidget(self)
         self.setCentralWidget(wid)
+        #wid.keyPressEvent = self.test_keypress_event
+        wid.keyReleaseEvent = self.test_keypress_event  # works for arrows, unlike keyPressEvent
+
 
         # Create layouts to place inside widget
         control_layout = QHBoxLayout()
@@ -100,7 +104,7 @@ class MainWindow(QtWidgets.QMainWindow):
         open_action = QAction(QtGui.QIcon('open.png'), '&Open', self)
         open_action.setShortcut('Ctrl+O')
         open_action.setStatusTip('Open movie')
-        open_action.triggered.connect(self.openFile)
+        open_action.triggered.connect(self.open_file)
 
         # Create exit action
         exit_action = QAction(QtGui.QIcon('exit.png'), '&Exit', self)
@@ -113,6 +117,12 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu = menu_bar.addMenu('&File')
         file_menu.addAction(open_action)
         file_menu.addAction(exit_action)
+
+    def test_keypress_event(self, e):
+        #if e.key == QtGui.QKeySequence.MoveToNextChar:
+        if e.key() == QtGui.Qt.Key_Right:
+            print('Right Arrow')
+        print(e.key())
 
     def enable_controls(self):
         self.play_button.setEnabled(True)
@@ -147,10 +157,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def show_frame(self):
         """ Display the current frame of video"""
+        if not self.vid:
+            return
+
         frame = self.vid.frame
-        self.image = PIL.Image.fromarray(frame)
-        self.image = QtGui.QImage(self.image.tobytes(), self.image.width, self.image.height, QtGui.QImage.Format_RGB888)
-        self.image_frame.setPixmap(QtGui.QPixmap.fromImage(self.image))
+        image = PIL.Image.fromarray(frame)
+        image = QtGui.QImage(image.tobytes(), image.width, image.height, QtGui.QImage.Format_RGB888)
+
+        # rescale image to fit window, keeping aspect ratio unchanged
+        image_scaled = image.scaled(self.image_frame.width(), self.image_frame.height(), QtCore.Qt.KeepAspectRatio)
+        self.image_frame.setPixmap(QtGui.QPixmap.fromImage(image_scaled))
 
     def initialize_video(self):
         # Actions to perform when a new video has been loaded
@@ -173,14 +189,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.show_frame()
 
-
-    def openFile(self):
+    def open_file(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Movie") #,
                 #QtCore.QDir.homePath())
 
         if filename != '':
             print(filename)
-            self.video_source = r'm:\work\iCoder\sample_data\CueCue_108.mov'
             self.video_source = filename
 
             self.initialize_video()
@@ -196,7 +210,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show_frame()
         if self.state == STATE_PLAYING:
             delay = self.frame_delay - (time.perf_counter() - t0) * 1000
-            QtCore.QTimer.singleShot(math.floor(delay), self.play)
+            QtCore.QTimer.singleShot(max(math.floor(delay), 0), self.play)
 
     def toggle_state(self):
         if self.state == STATE_PLAYING:
@@ -229,6 +243,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def handleError(self):
         self.play_button.setEnabled(False)
         self.errorLabel.setText("Error: " + self.mediaPlayer.errorString())
+
+    def resizeEvent(self, event: QtGui.QResizeEvent):
+        super().resizeEvent(event)
+        self.show_frame()  # update (and resize) the display of the current frame
 
 
 if __name__ == "__main__":
