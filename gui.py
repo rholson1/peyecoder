@@ -167,6 +167,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # rescale image to fit window, keeping aspect ratio unchanged
         image_scaled = image.scaled(self.image_frame.width(), self.image_frame.height(), QtCore.Qt.KeepAspectRatio)
         self.image_frame.setPixmap(QtGui.QPixmap.fromImage(image_scaled))
+        self.image_frame.repaint()
 
     def initialize_video(self):
         # Actions to perform when a new video has been loaded
