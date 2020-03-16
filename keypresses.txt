@@ -1,0 +1,22 @@
+Keypresses used in iCoder
+
+1: change response to left
+2: change response to off
+3: change response to right
+5: change response to center
+6: toggle trial status on/off
++: increment trial number by 1
+-: decrement trial number by 1
+enter: adds an entry for the current frame (behavior contingent on trial status)
+
+when one or more log entries is selected:
+-------------------------------------------
+delete/backspace: delete selected log entries
++: increment trial number for selected log entries
+-: decrement trial number for selected log entries
+
+space: toggle play/pause of video
+left arrow: move one frame backward
+right arrow: move one frame forward
+[: move STEP frames backward
+]: move STEP frames forward
