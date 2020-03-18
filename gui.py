@@ -10,8 +10,10 @@ import timecode
 import PIL.Image, PIL.ImageTk
 import time
 import math
+import cv2
 
 from video_reader import BufferedVideoReader
+from audio_player import VideoAudioPlayer
 
 STATE_PLAYING = 1
 STATE_PAUSED = 2
@@ -32,6 +34,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # open video source
         self.video_source = ''  # r'm:\work\iCoder\sample_data\CueCue_108.mov'
         self.vid = None  # BufferedVideoReader(self.video_source)
+        self.audio = VideoAudioPlayer()
 
         self.timecode = None  # Timecode object used to translate from frames to SMTP timecode
 
@@ -58,7 +61,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.step_label = QLabel('Step')
         self.step_box = QLineEdit(str(self.step))
-        self.step_box.setFixedWidth(20)
+        self.step_box.setFixedWidth(32)
         step_validator = QIntValidator(1, 99)
         self.step_box.setValidator(step_validator)
         self.step_box.editingFinished.connect(self.update_step)
@@ -110,7 +113,7 @@ class MainWindow(QtWidgets.QMainWindow):
         exit_action = QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('Exit application')
-        exit_action.triggered.connect(self.exitCall)
+        exit_action.triggered.connect(self.close)
 
         # Create menu bar and add action
         menu_bar = self.menuBar()
@@ -165,7 +168,9 @@ class MainWindow(QtWidgets.QMainWindow):
         image = QtGui.QImage(image.tobytes(), image.width, image.height, QtGui.QImage.Format_RGB888)
 
         # rescale image to fit window, keeping aspect ratio unchanged
-        image_scaled = image.scaled(self.image_frame.width(), self.image_frame.height(), QtCore.Qt.KeepAspectRatio)
+        image_scaled = image.scaled(self.image_frame.width(), self.image_frame.height(),
+                                    QtCore.Qt.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation)
+
         self.image_frame.setPixmap(QtGui.QPixmap.fromImage(image_scaled))
         self.image_frame.repaint()
 
@@ -191,18 +196,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show_frame()
 
     def open_file(self):
-        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Movie") #,
-                #QtCore.QDir.homePath())
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Movie") #, QtCore.QDir.homePath())
 
         if filename != '':
-            print(filename)
             self.video_source = filename
 
             self.initialize_video()
+            self.audio.set_video_source(self.video_source)
             self.enable_controls()
-
-    def exitCall(self):
-        sys.exit(app.exec_())
 
     def play(self):
         t0 = time.perf_counter()
@@ -218,11 +219,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.play_button.setIcon(
                     self.style().standardIcon(QStyle.SP_MediaPlay))
             self.state = STATE_PAUSED
+            self.audio.stop()
         else:
             self.play_button.setIcon(
                     self.style().standardIcon(QStyle.SP_MediaPause))
             self.state = STATE_PLAYING
             self.play()
+            self.audio.play()
 
     def update_timecode(self):
         # Update timecode display to match current frame number
@@ -232,6 +235,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def positionChanged(self, position):
         self.position_slider.setValue(position)
         self.update_timecode()
+        self.audio.seek(position)
 
     def durationChanged(self, duration):
         self.position_slider.setRange(0, duration - 1)
