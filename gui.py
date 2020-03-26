@@ -2,7 +2,7 @@ import sys
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
-    QRadioButton, QButtonGroup, QDialogButtonBox
+    QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QTableWidget
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator
 from PySide2.QtCore import QRect, QRegExp
@@ -15,6 +15,7 @@ import math
 
 from video_reader import BufferedVideoReader
 from audio_player import VideoAudioPlayer
+from models import Prescreen, Code, LogTable
 
 STATE_PLAYING = 1
 STATE_PAUSED = 2
@@ -132,6 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.video_source = ''  # r'm:\work\iCoder\sample_data\CueCue_108.mov'
         self.vid = None  # BufferedVideoReader(self.video_source)
         self.audio = VideoAudioPlayer()
+        self.audio_muted = False
 
         self.timecode = None  # Timecode object used to translate from frames to SMTP timecode
         self.timecode_offset = 0  # Frame difference between position and displayed timecode
@@ -142,10 +144,21 @@ class MainWindow(QtWidgets.QMainWindow):
         control_layout = self.build_playback_widgets()
         step_layout = self.build_step_widgets()
 
+        tab_widget = self.build_tabs()
+        table_widget = self.build_table()
+
         layout = QVBoxLayout()
         layout.addWidget(self.image_frame)
         layout.addLayout(control_layout)
         layout.addLayout(step_layout)
+
+        layout2 = QHBoxLayout()
+        layout2.addLayout(layout)
+        layout2.addWidget(table_widget)
+
+        layout3 = QVBoxLayout()
+        layout3.addLayout(layout2)
+        layout3.addWidget(tab_widget)
 
         # Create a widget for window contents
         wid = QtWidgets.QWidget(self)
@@ -153,7 +166,7 @@ class MainWindow(QtWidgets.QMainWindow):
         #wid.keyPressEvent = self.test_keypress_event
         wid.keyReleaseEvent = self.handle_keypress  # works for arrows, unlike keyPressEvent
 
-        wid.setLayout(layout)
+        wid.setLayout(layout3)
 
         self.build_menu()
         self.open_subject_dialog()
@@ -166,6 +179,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.play_button.clicked.connect(self.toggle_state)
         self.play_button.setFocusPolicy(Qt.NoFocus)
 
+
+        self.mute_button = QPushButton()
+        self.mute_button.setIcon(self.style().standardIcon(QStyle.SP_MediaVolume))
+        self.mute_button.clicked.connect(self.toggle_mute)
+        self.mute_button.setFocusPolicy(Qt.NoFocus)
+
         self.position_slider = QSlider(QtCore.Qt.Horizontal)
         self.position_slider.setRange(0, 0)
         self.position_slider.sliderMoved.connect(self.setPosition)
@@ -173,6 +192,7 @@ class MainWindow(QtWidgets.QMainWindow):
         control_layout = QHBoxLayout()
         control_layout.setContentsMargins(0, 0, 0, 0)
         control_layout.addWidget(self.play_button)
+        control_layout.addWidget(self.mute_button)
         control_layout.addWidget(self.position_slider)
         return control_layout
 
@@ -213,6 +233,43 @@ class MainWindow(QtWidgets.QMainWindow):
         step_layout.addStretch()
         step_layout.addWidget(self.timecode_label)
         return step_layout
+
+    def build_table(self):
+        self.logtable = LogTable()
+        self.logtable.setColumnCount(3)
+        self.logtable.setAlternatingRowColors(True)
+        self.logtable.setHorizontalHeaderLabels(('Trial', 'PS 1 Code?', 'PS 1 Reason?'))
+
+        self.logtable.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
+
+        return self.logtable
+
+
+    def build_tabs(self):
+        """Create tab control which contains prescreen and code tabs"""
+        tab_widget = QTabWidget()
+        prescreen_tab = Prescreen(self.add_reason)
+        code_tab = Code(self.add_event)
+        code_tab.set_responses(('Right', 'Left', 'Center'))  # placeholder, will come from settings
+        tab_widget.addTab(prescreen_tab, 'Prescreen')
+        tab_widget.addTab(code_tab, 'Code')
+        tab_widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        tab_widget.currentChanged.connect(self.change_tab)
+        return tab_widget
+
+    def change_tab(self, index):
+        if index == 0:  # Prescreen
+            self.logtable.setColumnCount(3)
+            self.logtable.setHorizontalHeaderLabels(('Trial', 'PS 1 Code?', 'PS 1 Reason?'))
+        elif index == 1:  # Code
+            self.logtable.setColumnCount(4)
+            self.logtable.setHorizontalHeaderLabels(('Trial #', 'Trial Status', 'Response', 'Time Code'))
+
+    def add_reason(self, reason):
+        self.logtable.add_row(reason)
+
+    def add_event(self, event):
+        self.logtable.add_row(event)
 
     def build_menu(self):
         """Create the menu bar and global fixed actions"""
@@ -383,13 +440,28 @@ class MainWindow(QtWidgets.QMainWindow):
             self.play_button.setIcon(
                     self.style().standardIcon(QStyle.SP_MediaPlay))
             self.state = STATE_PAUSED
-            self.audio.stop()
+            if not self.audio_muted:
+                self.audio.stop()
         else:
             self.play_button.setIcon(
                     self.style().standardIcon(QStyle.SP_MediaPause))
             self.state = STATE_PLAYING
             self.play()
-            self.audio.play()
+            if not self.audio_muted:
+                self.audio.play()
+
+    def toggle_mute(self):
+        """ Callback for the audio mute button """
+        self.audio_muted = not self.audio_muted
+        if self.audio_muted:
+            icon_style = QStyle.SP_MediaVolumeMuted
+            if self.state == STATE_PLAYING:
+                self.audio.stop()
+        else:
+            icon_style = QStyle.SP_MediaVolume
+            if self.state == STATE_PLAYING:
+                self.audio.play()
+        self.mute_button.setIcon(self.style().standardIcon(icon_style))
 
     def update_timecode(self):
         # Update timecode display to match current frame number
