@@ -8,4 +8,7 @@ Dependencies
 - **opencv-python**: Computer vision library used to read videos   
 - **Pillow**: image manipulation library
 - **timecode**: library for SMTPE timecode computations
+- **PyAudio**: library used to playback audio
+- **sortedcontainers**: data structures which maintain sort order
+
 
