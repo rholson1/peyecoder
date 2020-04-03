@@ -271,7 +271,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.prescreen_tab.group_who.buttonClicked.connect(self.update_log)
         self.prescreen_tab.both_checkbox.stateChanged.connect(self.update_log)
         self.code_tab = Code(self.add_event)
-        self.code_tab.set_responses(self.settings['Response Keys'].values())  # placeholder, will come from settings
+        self.code_tab.set_responses(self.settings['Response Keys'].keys())  # placeholder, will come from settings
         self.tab_widget.addTab(self.prescreen_tab, 'Prescreen')
         self.tab_widget.addTab(self.code_tab, 'Code')
         self.tab_widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
