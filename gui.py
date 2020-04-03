@@ -310,7 +310,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # delete prescreen reasons by trial
             ps = self.prescreen_tab.prescreener()
             for row in rows:
-                trial = int(self.logtable.data[row][0].text())
+                trial = int(rows[row])
                 self.reasons.delete_reason(trial, ps)
         elif self.active_tab == TAB_CODE:  # Code
             # delete code entries by row (in descending order)
@@ -398,8 +398,10 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 self.code_tab.record_event()
         elif e.key() in (Qt.Key_Delete, Qt.Key_Backspace):
-            deleted_rows = self.logtable.delete_selected()
-            self.delete_data_rows(deleted_rows)
+            # The order of operations is important here
+            selected_rows = self.logtable.selected_rows()
+            self.logtable.delete_selected()
+            self.delete_data_rows(selected_rows)
         elif e.key() == self.settings.get('Toggle Trial Status Key', None):
             # toggle between 0 and 1
             self.code_tab.trial_status.setCurrentIndex(not self.code_tab.trial_status.currentIndex())

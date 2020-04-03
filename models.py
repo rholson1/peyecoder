@@ -237,6 +237,7 @@ class Prescreen(QWidget):
         self.trial_box = QSpinBox()
         self.trial_box.setFixedWidth(64)
         self.trial_box.setValue(1)
+        self.trial_box.setFocusPolicy(Qt.NoFocus)
 
         reason_label = QLabel('Reason:')
         self.reason_box = QComboBox()
@@ -310,6 +311,7 @@ class Code(QWidget):
         self.trial_box = QSpinBox()
         self.trial_box.setFixedWidth(64)
         self.trial_box.setValue(1)
+        self.trial_box.setFocusPolicy(Qt.NoFocus)
 
         trial_status_label = QLabel('Trial Status:')
         self.trial_status = QComboBox()
@@ -418,10 +420,12 @@ class LogTable(QTableWidget):
         return len(self.selectedItems()) > 0
 
     def selected_rows(self):
-        rows = []
+        # Return rows as dictionary with the keys the row numbers
+        # and the values the text of the first cell in the row
+        rows = {}
         for row in range(self.rowCount()):
             if self.item(row, 0).isSelected():
-                rows.append(row)
+                rows[row] = self.item(row, 0).text()
         return rows
 
     def set_code_labels(self):
