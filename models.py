@@ -463,8 +463,8 @@ class Occluders:
         """
         :param occluders: list of QRect objects
         """
-        if occluders:
-            self.occluders = occluders
+        self.occluders = occluders if occluders else []
+
 
     @staticmethod
     def from_dictlist(d):
