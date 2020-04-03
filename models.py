@@ -258,6 +258,7 @@ class Prescreen(QWidget):
         self.record_button = QPushButton('Record Reason')
         self.record_button.clicked.connect(self.record_reason)
         self.record_button.setEnabled(False)
+        self.record_button.setFocusPolicy(Qt.NoFocus)
 
         self.both_checkbox = QCheckBox('Display both coders')
         self.radio_primary = QRadioButton('Primary')
@@ -322,6 +323,7 @@ class Code(QWidget):
         self.record_button = QPushButton('Record Event')
         self.record_button.clicked.connect(self.record_event)
         self.record_button.setEnabled(False)
+        self.record_button.setFocusPolicy(Qt.NoFocus)
 
         layout = QHBoxLayout()
         layout.addWidget(trial_label)

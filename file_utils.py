@@ -15,3 +15,12 @@ def save_datafile(filename, data):
     with open(filename, 'wb') as f:
         plistlib.dump(data, f)
 
+
+# Functions to convert dictionary with integer keys to string keys and vice versa
+def stringify_keys(d):
+    return {str(k): v for k, v in d.items()}
+
+
+def intify_keys(d):
+    """Convert string keys in a dictionary to integers"""
+    return {int(k): v for k, v in d.items()}

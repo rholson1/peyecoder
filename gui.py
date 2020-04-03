@@ -17,7 +17,7 @@ from video_reader import BufferedVideoReader
 from audio_player import VideoAudioPlayer
 from models import Prescreen, Code, LogTable, Offsets, Occluders, Reasons
 from models import Events
-from file_utils import load_datafile, save_datafile
+from file_utils import load_datafile, save_datafile, stringify_keys, intify_keys
 
 
 STATE_PLAYING = 1
@@ -150,10 +150,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings = {
             'Toggle Trial Status Key': int(Qt.Key_6),
             'Response Keys': {
-                'Left': int(Qt.Key_1),
-                'Off': int(Qt.Key_2),
-                'Right': int(Qt.Key_3),
-                'Center': int(Qt.Key_5)
+                int(Qt.Key_1): 'Left',
+                int(Qt.Key_2): 'Off',
+                int(Qt.Key_3): 'Right',
+                int(Qt.Key_5): 'Center'
             }
         }
 
@@ -271,7 +271,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.prescreen_tab.group_who.buttonClicked.connect(self.update_log)
         self.prescreen_tab.both_checkbox.stateChanged.connect(self.update_log)
         self.code_tab = Code(self.add_event)
-        self.code_tab.set_responses(self.settings['Response Keys'].keys())  # placeholder, will come from settings
+        self.code_tab.set_responses(self.settings['Response Keys'].values())  # placeholder, will come from settings
         self.tab_widget.addTab(self.prescreen_tab, 'Prescreen')
         self.tab_widget.addTab(self.code_tab, 'Code')
         self.tab_widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
@@ -381,7 +381,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.next_step()
         elif e.key() == Qt.Key_Space:
             self.toggle_state()
-        elif e.key() == Qt.Key_Plus:
+        elif e.key() in (Qt.Key_Plus, Qt.Key_Equal):
             if self.logtable.has_selection():
                 self.change_selected_trials(1)
             else:
@@ -569,9 +569,11 @@ class MainWindow(QtWidgets.QMainWindow):
             'Pre-Screen Array 1': self.reasons.ps[1]
         }
         data['Responses'] = self.events.to_plist()
-        data['Settings'] = self.settings
 
-        return data
+        data['Settings'] = self.settings
+        data['Settings']['Response Keys'] = stringify_keys(self.settings['Response Keys'])
+
+        return {'Subject': data}
 
     def unpack_data(self, data):
 
@@ -588,6 +590,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.events = Events.from_plist(d['Responses'])
 
         if 'Settings' in d:
+            if 'Response Keys' in d['Settings']:
+                d['Settings']['Response Keys'] = intify_keys(d['Settings']['Response Keys'])
             self.settings.update(d['Settings'])
 
     def play(self):
