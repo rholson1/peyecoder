@@ -141,7 +141,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.audio = VideoAudioPlayer()
         self.audio_muted = False
 
-        self.timecode = None  # Timecode object used to translate from frames to SMTP timecode
+        # Timecode object used to translate from frames to SMTP timecode
+        # Initialize with default framerate; will be updated when a video is loaded
+        self.timecode = timecode.Timecode('29.97')
+        self.timecode.drop_frame = False
+
         self.timecode_offsets = Offsets()  # Frame difference between position and displayed timecode
 
         self.occluders = Occluders()
