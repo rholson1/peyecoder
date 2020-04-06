@@ -112,9 +112,16 @@ class Reasons:
 class Event:
     def __init__(self, trial=0, status='', response='', frame=0):
         self.trial = trial
-        self.status = status
+        self._status = status
         self.response = response
         self.frame = frame
+
+    @property
+    def status(self):
+        if self._status:
+            return 'on'
+        else:
+            return 'off'
 
     def values(self):
         return [self.trial, self.status, self.response, self.frame]
