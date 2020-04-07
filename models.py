@@ -503,26 +503,27 @@ class TrialOrder:
 
     def read_trial_order(self, filename):
         """ Read data from a trial order file"""
+        print(filename)
         data = []
         with open(filename) as f:
             reader = DictReader(f)
 
             for row in reader:
-                try:
-                    data.append({
-                        'Name': row.get('Name', ''),
-                        'Trial Number': int(row.get('Trial Number', 0) or row.get('trial number', 0)),
-                        'Sound Stimulus': row.get('Sound Stimulus', ''),
-                        'Left Image': row.get('Left Image', ''),
-                        'Center Image': row.get('Center Image', ''),
-                        'Right Image': row.get('Right Image', ''),
-                        'Target Side': row.get('Target Side', '') or row.get('target side', ''),
-                        'Condition': row.get('Condition', '') or row.get('condition', ''),
-                        'Used': row.get('Used', ''),
-                        'Trial End': int(row.get('Trial End', '') or row.get('TrEnd', '')),
-                        'Critical Onset': int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
-                    })
-                except ValueError:
-                    pass
+                #try:
+                data.append({
+                    'Name': row.get('Name', ''),
+                    'Trial Number': int(row.get('Trial Number', 0) or row.get('trial number', 0)),
+                    'Sound Stimulus': row.get('Sound Stimulus', ''),
+                    'Left Image': row.get('Left Image', ''),
+                    'Center Image': row.get('Center Image', ''),
+                    'Right Image': row.get('Right Image', ''),
+                    'Target Side': row.get('Target Side', '') or row.get('target side', ''),
+                    'Condition': row.get('Condition', '') or row.get('condition', ''),
+                    'Used': row.get('Used', ''),
+                    'Trial End': int(row.get('Trial End', '') or row.get('TrEnd', '')),
+                    'Critical Onset': int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
+                })
+                #except ValueError:
+                 #   pass
 
         self.data = data
