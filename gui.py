@@ -40,8 +40,8 @@ class FileDropTarget(QLabel):
     def dragEnterEvent(self, event:QtGui.QDragEnterEvent):
         data = event.mimeData()
         print(data.formats())  # debug
-        if data.hasFormat('text/plain'):
-            event.acceptProposedAction()
+        #if data.hasFormat('text/plain'):
+        event.acceptProposedAction()
 
     def dropEvent(self, event:QtGui.QDropEvent):
         file_url = event.mimeData().text().strip()
