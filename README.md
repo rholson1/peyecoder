@@ -10,5 +10,8 @@ Dependencies
 - **timecode**: library for SMTPE timecode computations
 - **PyAudio**: library used to playback audio
 - **sortedcontainers**: data structures which maintain sort order
+- **python-dateutil**: date utilities
+
+
 
 

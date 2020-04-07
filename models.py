@@ -11,6 +11,7 @@ from sortedcontainers import SortedDict, SortedList
 from functools import total_ordering
 
 from timecode import Timecode
+from csv import DictReader
 
 class Subject:
     def __init__(self):
@@ -488,3 +489,40 @@ class Occluders:
 
     def __iter__(self):
         return self.occluders.__iter__()
+
+
+class TrialOrder:
+    def __init__(self):
+        self.data = []
+
+    def name(self):
+        if self.data:
+            return self.data[0]['Name']
+        else:
+            return 'No Trial Order loaded'
+
+    def read_trial_order(self, filename):
+        """ Read data from a trial order file"""
+        data = []
+        with open(filename) as f:
+            reader = DictReader(f)
+
+            for row in reader:
+                try:
+                    data.append({
+                        'Name': row.get('Name', ''),
+                        'Trial Number': int(row.get('Trial Number', 0) or row.get('trial number', 0)),
+                        'Sound Stimulus': row.get('Sound Stimulus', ''),
+                        'Left Image': row.get('Left Image', ''),
+                        'Center Image': row.get('Center Image', ''),
+                        'Right Image': row.get('Right Image', ''),
+                        'Target Side': row.get('Target Side', '') or row.get('target side', ''),
+                        'Condition': row.get('Condition', '') or row.get('condition', ''),
+                        'Used': row.get('Used', ''),
+                        'Trial End': int(row.get('Trial End', '') or row.get('TrEnd', '')),
+                        'Critical Onset': int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
+                    })
+                except ValueError:
+                    pass
+
+        self.data = data

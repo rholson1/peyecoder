@@ -2,21 +2,22 @@ import sys
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
-    QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QTableWidget
+    QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QCheckBox, QTextEdit, QFrame
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator
-from PySide2.QtCore import QRect, QRegExp
+from PySide2.QtCore import QRect, QRegExp, Signal, Slot
 
 import timecode
 
 import PIL.Image, PIL.ImageTk
 import time
 import math
-
+from dateutil import parser
+from urllib.parse import urlparse
 from video_reader import BufferedVideoReader
 from audio_player import VideoAudioPlayer
 from models import Prescreen, Code, LogTable, Offsets, Occluders, Reasons
-from models import Events
+from models import Events, TrialOrder
 from file_utils import load_datafile, save_datafile, stringify_keys, intify_keys
 
 
@@ -25,6 +26,28 @@ STATE_PAUSED = 2
 
 TAB_PRESCREEN = 0
 TAB_CODE = 1
+
+
+class FileDropTarget(QLabel):
+    dropped = Signal(str, name='dropped')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setAcceptDrops(True)
+        self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self.filename = ''
+
+    def dragEnterEvent(self, event:QtGui.QDragEnterEvent):
+        data = event.mimeData()
+        if data.hasFormat('text/plain'):
+            event.acceptProposedAction()
+
+    def dropEvent(self, event:QtGui.QDropEvent):
+        file_url = event.mimeData().text().strip()
+        self.filename = urlparse(file_url).path
+
+        event.acceptProposedAction()
+        self.dropped.emit(self.filename)
 
 
 class SubjectDialog(QDialog):
@@ -55,20 +78,39 @@ class SubjectDialog(QDialog):
         self.dob_box = QLineEdit()
         self.dob_box.setValidator(self.date_validator)
         self.dob_box.setPlaceholderText('MM/DD/YY')
+        self.dob_box.editingFinished.connect(self.update_age)
 
         self.participation_date_label = QLabel('Participation Date:')
         self.participation_date_box = QLineEdit()
         self.participation_date_box.setValidator(self.date_validator)
         self.participation_date_box.setPlaceholderText('MM/DD/YY')
+        self.participation_date_box.editingFinished.connect(self.update_age)
+
+        self.age_label = QLabel('Age:')
+        self.months_label = QLabel(' Months')
 
         self.trial_order_label = QLabel('Trial Order:')
-        self.trial_order_box = QLabel('Drag and Drop .csv here (TBD)')
+        self.trial_order_box = FileDropTarget('Drop trial order file here')
 
-        self.coder_initials_label = QLabel('Coder initials:')
-        self.coder_initials_box = QLineEdit()
+        self.ps1_label = QLabel('Primary Prescreener:')
+        self.ps1_box = QLineEdit()
+        self.ps1_checkbox = QCheckBox('Completed')
 
-        self.prescreener_initials_label = QLabel('Prescreener initials:')
-        self.prescreener_initials_box = QLineEdit()
+        self.ps2_label = QLabel('Secondary Prescreener:')
+        self.ps2_box = QLineEdit()
+        self.ps2_checkbox = QCheckBox('Completed')
+
+        self.coder_label = QLabel('Coder:')
+        self.coder_box = QLineEdit()
+
+        self.checked_label = QLabel('Checked by:')
+        self.checked_box = QLineEdit()
+
+        self.offsets_label = QLabel('Resynchronization:')
+        self.offsets_box = QLabel('')
+
+        self.notes_label = QLabel('Notes:')
+        self.notes_box = QTextEdit()
 
         grid = QGridLayout()
         r = 1
@@ -84,16 +126,43 @@ class SubjectDialog(QDialog):
         grid.addWidget(self.participation_date_label, r, 0)
         grid.addWidget(self.participation_date_box, r, 1)
         r += 1
+        grid.addWidget(self.age_label, r, 0)
+        grid.addWidget(self.months_label, r, 1)
+        r += 1
         grid.addWidget(self.trial_order_label, r, 0)
         grid.addWidget(self.trial_order_box, r, 1)
         r += 1
-        grid.addWidget(self.coder_initials_label, r, 0)
-        grid.addWidget(self.coder_initials_box, r, 1)
+        grid.addWidget(self.ps1_label, r, 0)
+        grid.addWidget(self.ps1_box, r, 1)
+        grid.addWidget(self.ps1_checkbox, r, 2)
         r += 1
-        grid.addWidget(self.prescreener_initials_label, r, 0)
-        grid.addWidget(self.prescreener_initials_box, r, 1)
+        grid.addWidget(self.ps2_label, r, 0)
+        grid.addWidget(self.ps2_box, r, 1)
+        grid.addWidget(self.ps2_checkbox, r, 2)
+        r += 1
+        grid.addWidget(self.coder_label, r, 0)
+        grid.addWidget(self.coder_box, r, 1)
+        r += 1
+        grid.addWidget(self.checked_label, r, 0)
+        grid.addWidget(self.checked_box, r, 1)
+        r += 1
+        grid.addWidget(self.offsets_label, r, 0)
+        grid.addWidget(self.offsets_box, r, 1)
+        r += 1
+        grid.addWidget(self.notes_label, r, 0)
+        grid.addWidget(self.notes_box, r, 1)
 
         self.setLayout(grid)
+
+    def update_age(self):
+        try:
+            dob = parser.parse(self.dob_box.text(), dayfirst=False).date()
+            participation_date = parser.parse(self.participation_date_box.text(), dayfirst=False).date()
+            age_days = (participation_date - dob).days
+            age_months = age_days / 30.44
+            self.months_label.setText('{:0.1f} Months'.format(age_months))
+        except:
+            self.months_label.setText('-- Months')
 
 
 class TimecodeDialog(QDialog):
@@ -148,6 +217,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.timecode_offsets = Offsets()  # Frame difference between position and displayed timecode
 
+        self.trial_order = TrialOrder()
         self.occluders = Occluders()
         self.reasons = Reasons()
         self.events = Events()
@@ -266,7 +336,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.logtable.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
         return self.logtable
-
 
     def build_tabs(self):
         """Create tab control which contains prescreen and code tabs"""
@@ -437,7 +506,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_subject_dialog(self):
         self.subject_dialog = SubjectDialog(self)
+        self.subject_dialog.trial_order_box.dropped.connect(self.update_trial_order)
         self.subject_dialog.show()
+
+    def update_trial_order(self, filename):
+        self.trial_order.read_trial_order(filename)
+        self.subject_dialog.trial_order_box.setText(self.trial_order.name())
 
     def enable_controls(self):
         self.play_button.setEnabled(True)
