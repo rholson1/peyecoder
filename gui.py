@@ -39,13 +39,14 @@ class FileDropTarget(QLabel):
 
     def dragEnterEvent(self, event:QtGui.QDragEnterEvent):
         data = event.mimeData()
+        print(data.formats())  # debug
         if data.hasFormat('text/plain'):
             event.acceptProposedAction()
 
     def dropEvent(self, event:QtGui.QDropEvent):
         file_url = event.mimeData().text().strip()
+        print(file_url)  # debug
         self.filename = urlparse(file_url).path
-
         event.acceptProposedAction()
         self.dropped.emit(self.filename)
 
