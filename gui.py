@@ -224,10 +224,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings = {
             'Toggle Trial Status Key': int(Qt.Key_6),
             'Response Keys': {
-                int(Qt.Key_1): 'Left',
-                int(Qt.Key_2): 'Off',
-                int(Qt.Key_3): 'Right',
-                int(Qt.Key_5): 'Center'
+                int(Qt.Key_1): 'left',
+                int(Qt.Key_2): 'off',
+                int(Qt.Key_3): 'right',
+                int(Qt.Key_5): 'center'
             }
         }
 
@@ -308,7 +308,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.step_box.setFixedWidth(32)
         step_validator = QIntValidator(1, 99)
         self.step_box.setValidator(step_validator)
-        self.step_box.editingFinished.connect(self.update_step)
+        self.step_box.textChanged.connect(self.update_step)
 
         # Timecode display
         self.timecode_label = QLabel('00:00:00;00')
@@ -334,6 +334,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.logtable.setMinimumWidth(400)
         self.logtable.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+        self.logtable.itemSelectionChanged.connect(self.select_code_row)
 
         return self.logtable
 
@@ -367,6 +369,22 @@ class MainWindow(QtWidgets.QMainWindow):
         elif self.active_tab == TAB_CODE:  # Code
             self.logtable.set_code_labels()
             self.logtable.load_data(self.events.render(self.timecode_offsets, self.timecode))
+
+    def select_code_row(self):
+        """ When a row or rows have been selected in the code log, update the code tab widgets and the video position
+        to correspond to the first selected row.
+        """
+        if self.active_tab == TAB_CODE:
+            rows = self.logtable.selected_rows()
+            if rows:
+                row = sorted(rows.keys())[0]
+
+                # update trial, status, response, frame
+                self.code_tab.trial_box.setValue(self.events[row].trial)
+                self.code_tab.trial_status.setCurrentText(self.events[row].status)
+                self.code_tab.response_box.setCurrentText(self.events[row].response)
+                self.update_position(self.events[row].frame)
+
 
     def add_reason(self, reason):
         self.reasons.add_reason(reason, ps=self.prescreen_tab.group_who.checkedId())
@@ -514,7 +532,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.trial_order.read_trial_order(filename)
         self.subject_dialog.trial_order_box.setText(self.trial_order.name())
 
-
     def enable_controls(self):
         self.play_button.setEnabled(True)
         self.next_button.setEnabled(True)
@@ -544,7 +561,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.vid.next(offset)
         elif offset < 0:
             self.vid.prev(-offset)  # note minus sign!
-        self.positionChanged(self.vid.frame_number)
+        self.update_position(self.vid.frame_number)
         self.show_frame()
 
     def next_frame(self):
@@ -599,7 +616,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Update slider control
         self.durationChanged(self.vid.frame_count)
-        self.positionChanged(0)
+        self.update_position(0)
 
         # Update playback speed
         if self.vid.frame_rate > 0:
@@ -679,7 +696,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def play(self):
         t0 = time.perf_counter()
         self.vid.next()
-        self.positionChanged(self.vid.frame_number)
+        self.update_position(self.vid.frame_number)
         self.show_frame()
         if self.state == STATE_PLAYING:
             delay = self.frame_delay - (time.perf_counter() - t0) * 1000
@@ -720,16 +737,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.timecode.frames = self.vid.frame_number + 1 + self.timecode_offsets.get_offset(self.vid.frame_number)
         self.timecode_label.setText(str(self.timecode))
 
-    def positionChanged(self, position):
+    def update_position(self, position):
         self.position_slider.setValue(position)
-        self.update_timecode()
-        self.audio.seek(position)
+        self.setPosition(position)
 
     def durationChanged(self, duration):
         self.position_slider.setRange(0, duration - 1)
 
     def setPosition(self, position):
         self.vid.goto_framenumber(position)
+        self.audio.seek(position)
         self.update_timecode()
         self.show_frame()
 

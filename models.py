@@ -224,6 +224,12 @@ class Events:
             )
         return Events(events)
 
+    def __getitem__(self, item):
+        return self.events.__getitem__(item)
+
+    def __getattr__(self, item):
+        return getattr(self.events, item)
+
 
 class Prescreen(QWidget):
     REASONS = (
@@ -308,7 +314,7 @@ class Prescreen(QWidget):
 
 
 class Code(QWidget):
-    TRIAL_STATUS = ('On', 'Off')
+    TRIAL_STATUS = ('on', 'off')
 
     def __init__(self, callback):
         super().__init__()
