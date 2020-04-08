@@ -14,6 +14,7 @@ import time
 import math
 from dateutil import parser
 from urllib.parse import urlparse
+from urllib.request import url2pathname
 from video_reader import BufferedVideoReader
 from audio_player import VideoAudioPlayer
 from models import Prescreen, Code, LogTable, Offsets, Occluders, Reasons
@@ -39,14 +40,12 @@ class FileDropTarget(QLabel):
 
     def dragEnterEvent(self, event:QtGui.QDragEnterEvent):
         data = event.mimeData()
-        print(data.formats())  # debug
-        #if data.hasFormat('text/plain'):
-        event.acceptProposedAction()
+        if data.hasFormat('text/uri-list'):
+            event.acceptProposedAction()
 
     def dropEvent(self, event:QtGui.QDropEvent):
         file_url = event.mimeData().text().strip()
-        print(file_url)  # debug
-        self.filename = urlparse(file_url).path
+        self.filename = url2pathname(urlparse(file_url).path)
         event.acceptProposedAction()
         self.dropped.emit(self.filename)
 
