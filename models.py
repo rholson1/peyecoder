@@ -11,7 +11,7 @@ from sortedcontainers import SortedDict, SortedList
 from functools import total_ordering
 
 from timecode import Timecode
-from csv import DictReader
+import csv
 
 class Subject:
     def __init__(self):
@@ -503,10 +503,12 @@ class TrialOrder:
 
     def read_trial_order(self, filename):
         """ Read data from a trial order file"""
-        print(filename)
         data = []
-        with open(filename) as f:
-            reader = DictReader(f)
+
+        with open(filename, 'r', newline='') as f:
+            dialect = csv.Sniffer().sniff(f.read(1024), delimiters=',\t')
+            f.seek(0)
+            reader = csv.DictReader(f, dialect=dialect)
 
             for row in reader:
                 #try:
@@ -520,10 +522,9 @@ class TrialOrder:
                     'Target Side': row.get('Target Side', '') or row.get('target side', ''),
                     'Condition': row.get('Condition', '') or row.get('condition', ''),
                     'Used': row.get('Used', ''),
-                    'Trial End': int(row.get('Trial End', '') or row.get('TrEnd', '')),
+                    'Trial End': int(row.get('Trial End', 0) or row.get('TrEnd', 0)),
                     'Critical Onset': int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
                 })
                 #except ValueError:
                  #   pass
-
         self.data = data

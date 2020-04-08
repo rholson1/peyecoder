@@ -510,8 +510,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subject_dialog.show()
 
     def update_trial_order(self, filename):
+        """ When a trial order file is dragged into the subject dialog, read the file into self.trial_order"""
         self.trial_order.read_trial_order(filename)
         self.subject_dialog.trial_order_box.setText(self.trial_order.name())
+
 
     def enable_controls(self):
         self.play_button.setEnabled(True)
