@@ -5,7 +5,7 @@ from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, QSlider, QStyle, \
     QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QCheckBox, QTextEdit, QFrame
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator
-from PySide2.QtCore import QRect, QRegExp, Signal, Slot
+from PySide2.QtCore import QRect, QRegExp, Signal
 
 import timecode
 
@@ -91,6 +91,7 @@ class SubjectDialog(QDialog):
 
         self.trial_order_label = QLabel('Trial Order:')
         self.trial_order_box = FileDropTarget('Drop trial order file here')
+        self.trial_order_box.dropped.connect(self.update_trial_order)
 
         self.ps1_label = QLabel('Primary Prescreener:')
         self.ps1_box = QLineEdit()
@@ -153,6 +154,11 @@ class SubjectDialog(QDialog):
         grid.addWidget(self.notes_box, r, 1)
 
         self.setLayout(grid)
+
+    def update_trial_order(self, filename):
+        """ When a trial order file is dragged into the subject dialog, read the file into TrialOrder object"""
+        self.parent().trial_order.read_trial_order(filename)
+        self.trial_order_box.setText(self.parent().trial_order.name())
 
     def update_age(self):
         try:
@@ -524,13 +530,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_subject_dialog(self):
         self.subject_dialog = SubjectDialog(self)
-        self.subject_dialog.trial_order_box.dropped.connect(self.update_trial_order)
         self.subject_dialog.show()
-
-    def update_trial_order(self, filename):
-        """ When a trial order file is dragged into the subject dialog, read the file into self.trial_order"""
-        self.trial_order.read_trial_order(filename)
-        self.subject_dialog.trial_order_box.setText(self.trial_order.name())
 
     def enable_controls(self):
         self.play_button.setEnabled(True)

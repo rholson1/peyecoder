@@ -361,6 +361,9 @@ class Code(QWidget):
         event = Event(trial=self.trial_box.value(),
                       status=self.trial_status.currentText(),
                       response=self.response_box.currentText())
+        if self.trial_status.currentText() == 'off':
+            self.trial_box.setValue(self.trial_box.value() + 1)
+            self.trial_status.setCurrentText('on')
         self.callback(event)
 
 
