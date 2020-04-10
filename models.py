@@ -13,9 +13,22 @@ from functools import total_ordering
 from timecode import Timecode
 import csv
 
+
 class Subject:
+    fieldnames = ('Birthday', 'Coder', 'Date of Test', 'Number', 'Order',
+                  'Primary PS', 'Secondary PS', 'Checked By',
+                  'Primary PS Complete', 'Secondary PS Complete',
+                  'Sex', 'Unused Trials', 'Notes')
+
     def __init__(self):
-        pass
+        self._d = {}
+
+    def update_from_dict(self, d):
+        for f in self.fieldnames:
+            self._d[f] = d.get(f, '')
+
+    def to_dict(self):
+        return self._d
 
 
 class Reason:

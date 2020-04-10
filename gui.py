@@ -2,7 +2,7 @@ import sys
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
-    QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QCheckBox, QTextEdit, QFrame
+    QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QCheckBox, QPlainTextEdit, QFrame
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator
 from PySide2.QtCore import QRect, QRegExp, Signal
@@ -18,7 +18,7 @@ from urllib.request import url2pathname
 from video_reader import BufferedVideoReader
 from audio_player import VideoAudioPlayer
 from models import Prescreen, Code, LogTable, Offsets, Occluders, Reasons
-from models import Events, TrialOrder
+from models import Events, TrialOrder, Subject
 from file_utils import load_datafile, save_datafile, stringify_keys, intify_keys
 
 
@@ -59,6 +59,7 @@ class SubjectDialog(QDialog):
 
         self.subject_label = QLabel('Subject Number:')
         self.subject_box = QLineEdit()
+        self.subject_box.editingFinished.connect(self.sync_fields)
 
         self.sex_label = QLabel('Sex:')
         self.male_radio = QRadioButton('Male')
@@ -68,8 +69,9 @@ class SubjectDialog(QDialog):
         self.sex_layout.addWidget(self.female_radio)
         # Group radio buttons logically in button group to create one mutually-exclusive set
         self.sex_radiogroup = QButtonGroup()
-        self.sex_radiogroup.addButton(self.male_radio)
-        self.sex_radiogroup.addButton(self.female_radio)
+        self.sex_radiogroup.addButton(self.male_radio, id=1)
+        self.sex_radiogroup.addButton(self.female_radio, id=2)
+        self.sex_radiogroup.buttonClicked.connect(self.sync_fields)
 
         date_regexp = QRegExp('^[0-3]?[0-9]/[0-3]?[0-9]/(?:[0-9]{2})?[0-9]{2}$')
         self.date_validator = QRegExpValidator(date_regexp)
@@ -79,12 +81,14 @@ class SubjectDialog(QDialog):
         self.dob_box.setValidator(self.date_validator)
         self.dob_box.setPlaceholderText('MM/DD/YY')
         self.dob_box.editingFinished.connect(self.update_age)
+        self.dob_box.editingFinished.connect(self.sync_fields)
 
         self.participation_date_label = QLabel('Participation Date:')
         self.participation_date_box = QLineEdit()
         self.participation_date_box.setValidator(self.date_validator)
         self.participation_date_box.setPlaceholderText('MM/DD/YY')
         self.participation_date_box.editingFinished.connect(self.update_age)
+        self.participation_date_box.editingFinished.connect(self.sync_fields)
 
         self.age_label = QLabel('Age:')
         self.months_label = QLabel(' Months')
@@ -95,23 +99,30 @@ class SubjectDialog(QDialog):
 
         self.ps1_label = QLabel('Primary Prescreener:')
         self.ps1_box = QLineEdit()
+        self.ps1_box.editingFinished.connect(self.sync_fields)
         self.ps1_checkbox = QCheckBox('Completed')
+        self.ps1_checkbox.stateChanged.connect(self.sync_fields)
 
         self.ps2_label = QLabel('Secondary Prescreener:')
         self.ps2_box = QLineEdit()
+        self.ps2_box.editingFinished.connect(self.sync_fields)
         self.ps2_checkbox = QCheckBox('Completed')
+        self.ps2_checkbox.stateChanged.connect(self.sync_fields)
 
         self.coder_label = QLabel('Coder:')
         self.coder_box = QLineEdit()
+        self.coder_box.editingFinished.connect(self.sync_fields)
 
         self.checked_label = QLabel('Checked by:')
         self.checked_box = QLineEdit()
+        self.checked_box.editingFinished.connect(self.sync_fields)
 
         self.offsets_label = QLabel('Resynchronization:')
         self.offsets_box = QLabel('')
 
         self.notes_label = QLabel('Notes:')
-        self.notes_box = QTextEdit()
+        self.notes_box = QPlainTextEdit()
+        self.notes_box.textChanged.connect(self.sync_fields)
 
         grid = QGridLayout()
         r = 1
@@ -159,6 +170,7 @@ class SubjectDialog(QDialog):
         """ When a trial order file is dragged into the subject dialog, read the file into TrialOrder object"""
         self.parent().trial_order.read_trial_order(filename)
         self.trial_order_box.setText(self.parent().trial_order.name())
+        self.sync_fields()
 
     def update_age(self):
         try:
@@ -169,6 +181,27 @@ class SubjectDialog(QDialog):
             self.months_label.setText('{:0.1f} Months'.format(age_months))
         except:
             self.months_label.setText('-- Months')
+
+    def sync_fields(self, *args):
+        # Update parent.subject from Subject Dialog fields
+        d = {
+            'Number': self.subject_box.text(),
+            'Sex': self.sex_radiogroup.checkedId() == 1,  # True for Male, False, for Female
+            'Birthday': self.dob_box.text(),
+            'Date of Test': self.participation_date_box.text(),
+            'Trial Order': self.parent().trial_order.name(),
+            'Primary PS': self.ps1_box.text(),
+            'Primary PS Complete': self.ps1_checkbox.isChecked(),
+            'Secondary PS': self.ps2_box.text(),
+            'Secondary PS Complete': self.ps2_checkbox.isChecked(),
+            'Coder': self.coder_box.text(),
+            'Checked By': self.checked_box.text(),
+            'Unused Trials': [],
+            'Notes': self.notes_box.toPlainText()
+        }
+
+        self.parent().subject.update_from_dict(d)
+
 
 
 class TimecodeDialog(QDialog):
@@ -236,6 +269,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 int(Qt.Key_5): 'center'
             }
         }
+        self.subject = Subject()
 
         # Create layouts to place inside widget
         control_layout = self.build_playback_widgets()
@@ -489,7 +523,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 #self.logtable.decrement_selected()
             else:
                 self.change_trial(-1)
-        elif e.key() == Qt.Key_Enter:
+        elif e.key() in (Qt.Key_Enter, Qt.Key_Return):
             if self.active_tab == TAB_PRESCREEN:
                 self.prescreen_tab.record_reason()
             else:
