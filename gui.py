@@ -44,7 +44,8 @@ class FileDropTarget(QLabel):
             event.acceptProposedAction()
 
     def dropEvent(self, event:QtGui.QDropEvent):
-        file_url = event.mimeData().text().strip()
+        #file_url = event.mimeData().text().strip()  # works with Nautilus, but not Thunar
+        file_url = event.mimeData().urls()[0].url()  # works with Thunar and Nautilus
         self.filename = url2pathname(urlparse(file_url).path)
         event.acceptProposedAction()
         self.dropped.emit(self.filename)
@@ -706,6 +707,8 @@ class MainWindow(QtWidgets.QMainWindow):
         data['Settings'] = self.settings
         data['Settings']['Response Keys'] = stringify_keys(self.settings['Response Keys'])
 
+        data.update(self.subject.to_dict())
+
         return {'Subject': data}
 
     def unpack_data(self, data):
@@ -726,6 +729,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if 'Response Keys' in d['Settings']:
                 d['Settings']['Response Keys'] = intify_keys(d['Settings']['Response Keys'])
             self.settings.update(d['Settings'])
+        self.subject.update_from_dict(d)
 
     def play(self):
         t0 = time.perf_counter()
