@@ -300,6 +300,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         table_widget = self.build_table()
 
+        self.message_box = QLabel()
+        self.message_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+
         layout = QVBoxLayout()
         layout.addWidget(self.image_frame)
         layout.addLayout(control_layout)
@@ -312,6 +315,7 @@ class MainWindow(QtWidgets.QMainWindow):
         layout3 = QVBoxLayout()
         layout3.addLayout(layout2)
         layout3.addWidget(tab_widget)
+        layout3.addWidget(self.message_box)
 
         # Create a widget for window contents
         wid = QtWidgets.QWidget(self)
@@ -430,6 +434,11 @@ class MainWindow(QtWidgets.QMainWindow):
         elif self.active_tab == TAB_CODE:  # Code
             self.logtable.set_code_labels()
             self.logtable.load_data(self.events.render(self.timecode_offsets, self.timecode))
+
+            errors, err_msg = self.events.error_items(self.trial_order.unused)
+            self.logtable.redden_rows(errors)
+            self.message_box.setText('\n'.join(err_msg))
+
 
     def select_code_row(self):
         """ When a row or rows have been selected in the code log, update the code tab widgets and the video position
@@ -562,6 +571,8 @@ class MainWindow(QtWidgets.QMainWindow):
             selected_rows = self.logtable.selected_rows()
             self.logtable.delete_selected()
             self.delete_data_rows(selected_rows)
+
+            self.update_log()  # necessary only to update row highlighting if error status has changed
         elif e.key() == self.settings.get('Toggle Trial Status Key', None):
             # toggle between 0 and 1
             self.code_tab.trial_status.setCurrentIndex(not self.code_tab.trial_status.currentIndex())

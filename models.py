@@ -9,6 +9,7 @@ from PySide2.QtCore import QRect
 
 from sortedcontainers import SortedDict, SortedList
 from functools import total_ordering
+from collections import Counter
 
 from timecode import Timecode
 import csv
@@ -237,6 +238,28 @@ class Events:
             )
         return Events(events)
 
+    def error_items(self, unused_trials):
+        """ Check for errors and return a list of row numbers (which should be highlighted) and
+        corresponding error messages"""
+        all_error_rows = []
+        msg = []
+        # 1. Check for coding entries with a trial number in unused
+        error_rows = [i for i, e in enumerate(self.events) if e.trial in unused_trials]
+        if error_rows:
+            all_error_rows += error_rows
+            msg.append('Code entry for unused trial')
+
+        # 2. Check for duplicate entries (same timestamp)
+        frame_counter = Counter([e.frame for e in self.events])
+        duplicate_frames = [k for k, v in frame_counter.items() if v > 1]
+        error_rows = [i for i, e in enumerate(self.events) if e.frame in duplicate_frames]
+        if error_rows:
+            all_error_rows += error_rows
+            msg.append('Entries have the same timestamp')
+
+        return all_error_rows, msg
+
+
     def __getitem__(self, item):
         return self.events.__getitem__(item)
 
@@ -422,6 +445,11 @@ class LogTable(QTableWidget):
         for item in self.selectedItems():
             item.setForeground(Qt.red)
 
+    def redden_rows(self, rows):
+        for r in rows:
+            for c in range(self.columnCount()):
+                self.item(r, c).setForeground(Qt.red)
+
     def delete_selected(self):
         """Delete selected rows"""
         deleted_rows = []
@@ -516,12 +544,16 @@ class Occluders:
 class TrialOrder:
     def __init__(self):
         self.data = []
+        self.unused = []
 
     def name(self):
         if self.data:
             return self.data[0]['Name']
         else:
             return 'No Trial Order loaded'
+
+    def calc_unused(self):
+        self.unused = [d['Trial Number'] for d in self.data if d['Used'] == 'no']
 
     def read_trial_order(self, filename):
         """ Read data from a trial order file"""
@@ -550,3 +582,4 @@ class TrialOrder:
                 #except ValueError:
                  #   pass
         self.data = data
+        self.calc_unused()
