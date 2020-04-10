@@ -167,6 +167,8 @@ class SubjectDialog(QDialog):
 
         self.setLayout(grid)
 
+        self.update_from_dict(self.parent().subject.to_dict())
+
     def update_trial_order(self, filename):
         """ When a trial order file is dragged into the subject dialog, read the file into TrialOrder object"""
         self.parent().trial_order.read_trial_order(filename)
@@ -203,6 +205,24 @@ class SubjectDialog(QDialog):
 
         self.parent().subject.update_from_dict(d)
 
+    def update_from_dict(self, d):
+        self.subject_box.setText(str(d.get('Number', '')))
+        if 'Sex' in d:
+            self.male_radio.setChecked(d['Sex'])
+        self.dob_box.setText(d.get('Birthday', ''))
+        self.participation_date_box.setText(d.get('Date of Test', ''))
+        self.trial_order_box.setText(self.parent().trial_order.name())
+        self.ps1_box.setText(d.get('Primary PS', ''))
+        self.ps1_checkbox.setChecked(d.get('Primary PS Complete', False))
+        self.ps2_box.setText(d.get('Secondary PS', ''))
+        self.ps2_checkbox.setChecked(d.get('Secondary PS Complete', False))
+        self.coder_box.setText(d.get('Coder', ''))
+        self.checked_box.setText(d.get('Checked By', ''))
+        #self.unused_trials_box...
+        self.notes_box.insertPlainText(d.get('Notes', ''))
+
+        # update calculated control
+        self.update_age()
 
 
 class TimecodeDialog(QDialog):
@@ -483,6 +503,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.synchronize_action.triggered.connect(self.resynchronize)
         self.synchronize_action.setEnabled(False)
 
+        self.open_subject_action = QAction('Subject &Info', self)
+        self.open_subject_action.setShortcut('Ctrl+I')
+        self.open_subject_action.setStatusTip('Open Subject Information Window')
+        self.open_subject_action.triggered.connect(self.open_subject_dialog)
+
         # Create menu bar and add action
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('&File')
@@ -493,6 +518,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         edit_menu = menu_bar.addMenu('&Edit')
         edit_menu.addAction(self.synchronize_action)
+
+        view_menu = menu_bar.addMenu('&View')
+        view_menu.addAction(self.open_subject_action)
 
     def resynchronize(self):
         # Prompt user to enter a new timestamp for the current frame
@@ -688,6 +716,8 @@ class MainWindow(QtWidgets.QMainWindow):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Data File", filter="Data Files (*.vcx)") #, QtCore.QDir.homePath())
         if filename != '':
             self.unpack_data(load_datafile(filename))
+            if self.subject_dialog:
+                self.subject_dialog.update_from_dict(self.subject.to_dict())
 
     def save_datafile(self):
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Data File", filter="Data Files (*.vcx)")
