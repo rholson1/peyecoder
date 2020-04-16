@@ -2,7 +2,8 @@ import sys
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
-    QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QCheckBox, QPlainTextEdit, QFrame
+    QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QCheckBox, QPlainTextEdit, QFrame, \
+    QTableWidget, QHeaderView, QTableWidgetItem
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator
 from PySide2.QtCore import QRect, QRegExp, Signal
@@ -252,6 +253,60 @@ class TimecodeDialog(QDialog):
         self.timecode.set_timecode(self.timecode_box.text())
 
 
+class OcculuderDialog(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.setWindowTitle('Occluders')
+
+        self.top_label = QLabel('Enter desired occluder coordinates in pixel units\n'
+                                'measured from upper left corner of the video frame')
+
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(('x', 'y', 'w', 'h'))
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.add_row_button = QPushButton('Add Occluder')
+        self.add_row_button.clicked.connect(self.add_row)
+
+        self.save_occluders_button = QPushButton('Save Occluders')
+        self.save_occluders_button.clicked.connect(self.save_occluders)
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.top_label)
+        self.layout.addWidget(self.table)
+        self.layout.addWidget(self.add_row_button)
+        self.layout.addWidget(self.save_occluders_button)
+
+        self.setLayout(self.layout)
+
+        self.load_occluders()
+        self.add_row()
+
+    def load_occluders(self):
+        for rect in self.parent().occluders:
+            row = self.table.rowCount()
+            self.add_row()
+            for col, item in enumerate(rect.getRect()):
+                self.table.setItem(row, col, QTableWidgetItem(str(item)))
+
+    def save_occluders(self):
+        occluders = []
+        for r in range(self.table.rowCount()):
+            try:
+                r = QRect(*[int(self.table.item(r, c).text()) for c in range(4)])
+                occluders.append(r)
+            except (AttributeError, ValueError):
+                # AttributeError occurs for blank cells
+                # ValueError occurs for cells containing non-integer text
+                pass
+        self.parent().occluders = Occluders(occluders)
+
+    def add_row(self):
+        self.table.setRowCount(self.table.rowCount() + 1)
+
+
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
@@ -287,6 +342,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 int(Qt.Key_1): 'left',
                 int(Qt.Key_2): 'off',
                 int(Qt.Key_3): 'right',
+                int(Qt.Key_4): 'away',
                 int(Qt.Key_5): 'center'
             }
         }
@@ -517,6 +573,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.open_subject_action.setStatusTip('Open Subject Information Window')
         self.open_subject_action.triggered.connect(self.open_subject_dialog)
 
+        self.open_occluders_action = QAction('Occluders', self)
+        self.open_occluders_action.setStatusTip('Open Occluder Window')
+        self.open_occluders_action.triggered.connect(self.open_occluder_dialog)
+
         # Create menu bar and add action
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('&File')
@@ -530,6 +590,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         view_menu = menu_bar.addMenu('&View')
         view_menu.addAction(self.open_subject_action)
+        view_menu.addAction(self.open_occluders_action)
 
     def resynchronize(self):
         # Prompt user to enter a new timestamp for the current frame
@@ -606,6 +667,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subject_dialog = SubjectDialog(self)
         self.subject_dialog.show()
 
+    def open_occluder_dialog(self):
+        self.occluder_dialog = OcculuderDialog(self)
+        self.occluder_dialog.show()
+
     def enable_controls(self):
         self.play_button.setEnabled(True)
         self.next_button.setEnabled(True)
@@ -667,7 +732,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Draw occluders in image
         painter = QtGui.QPainter(image)
         for occluder in self.occluders:
-            painter.fillRect(occluder, QtCore.Qt.red)
+            painter.fillRect(occluder, QtCore.Qt.gray)
         painter.end()
 
         # rescale image to fit window, keeping aspect ratio unchanged

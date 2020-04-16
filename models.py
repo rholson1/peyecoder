@@ -529,7 +529,6 @@ class Occluders:
         """
         self.occluders = occluders if occluders else []
 
-
     @staticmethod
     def from_dictlist(d):
         return Occluders([QRect(*[r[x] for x in 'xywh']) for r in d])

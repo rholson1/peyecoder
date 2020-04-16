@@ -3,6 +3,9 @@ Keypresses used in iCoder
 1: change response to left
 2: change response to off
 3: change response to right
+
+4: change response to away (if implemented)
+
 5: change response to center
 6: toggle trial status on/off
 +: increment trial number by 1
