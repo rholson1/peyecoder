@@ -408,7 +408,7 @@ class Code(QWidget):
 
     def record_event(self):
         event = Event(trial=self.trial_box.value(),
-                      status=self.trial_status.currentText(),
+                      status=self.trial_status.currentText() == 'on',
                       response=self.response_box.currentText())
         if self.trial_status.currentText() == 'off':
             self.trial_box.setValue(self.trial_box.value() + 1)
