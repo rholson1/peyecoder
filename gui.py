@@ -319,6 +319,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.image_frame = QLabel()
         self.image_frame.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
 
+        self.occluder_dialog = None
+        self.subject_dialog = None
+
         # open video source
         self.video_source = ''  # r'm:\work\iCoder\sample_data\CueCue_108.mov'
         self.vid = None  # BufferedVideoReader(self.video_source)
@@ -663,11 +666,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.code_tab.trial_box.setValue(self.code_tab.trial_box.value() + delta)
 
     def open_subject_dialog(self):
-        self.subject_dialog = SubjectDialog(self)
+        if not self.subject_dialog:
+            self.subject_dialog = SubjectDialog(self)
         self.subject_dialog.show()
 
     def open_occluder_dialog(self):
-        self.occluder_dialog = OcculuderDialog(self)
+        if not self.occluder_dialog:
+            self.occluder_dialog = OcculuderDialog(self)
         self.occluder_dialog.show()
 
     def enable_controls(self):
