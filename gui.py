@@ -491,10 +491,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.logtable.set_code_labels()
             self.logtable.load_data(self.events.render(self.timecode_offsets, self.timecode))
 
-            errors, err_msg = self.events.error_items(self.trial_order.unused)
+            errors, err_msg = self.events.error_items(self.trial_order.unused + self.reasons.unused())
             self.logtable.redden_rows(errors)
             self.message_box.setText('\n'.join(err_msg))
-
 
     def select_code_row(self):
         """ When a row or rows have been selected in the code log, update the code tab widgets and the video position

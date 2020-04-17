@@ -122,6 +122,10 @@ class Reasons:
                 data.append([t, p1.include, p1.reason, p2.include, p2.reason])
         return data
 
+    def unused(self):
+        """List of trials prescreened out by prescreener 1"""
+        return [v.trial for v in self.ps[0].values() if not v.include]
+
 
 @total_ordering
 class Event:
