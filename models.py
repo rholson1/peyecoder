@@ -35,11 +35,20 @@ class Subject:
 class Reason:
     def __init__(self, trial=0, include=False, reason=''):
         self.trial = trial
-        self.include = include
+        self._include = include
         self.reason = reason
 
     def values(self):
-        return [self.trial, self.include, self.reason]
+        return [self.trial, self._include, self.reason]
+
+    @property
+    def include(self):
+        if self._include is None:
+            return ''
+        elif self._include:
+            return 'yes'
+        else:
+            return 'no'
 
     def __str__(self):
         return 'Trial: {}, Code: {}, Reason: {}'.format(self.trial, self.include, self.reason)
@@ -117,8 +126,8 @@ class Reasons:
         if ps == 0:
             trials = list(set(self.ps[0]).union(self.ps[1]))
             for t in trials:
-                p1 = self.ps[0].get(t, Reason(t, '', ''))
-                p2 = self.ps[1].get(t, Reason(t, '', ''))
+                p1 = self.ps[0].get(t, Reason(t, None, ''))
+                p2 = self.ps[1].get(t, Reason(t, None, ''))
                 data.append([t, p1.include, p1.reason, p2.include, p2.reason])
         return data
 
