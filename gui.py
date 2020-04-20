@@ -459,7 +459,7 @@ class MainWindow(QtWidgets.QMainWindow):
         subject_number_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
         self.subject_number_box = QLabel('')
         self.subject_number_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
-        order_label = QLabel('Order :')
+        order_label = QLabel('Trial Order :')
         order_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
         self.order_label_box = QLabel('')
         self.order_label_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
