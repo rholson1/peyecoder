@@ -276,6 +276,16 @@ class Events:
             all_error_rows += error_rows
             msg.append('Entries have the same timestamp')
 
+        # 3. Check for trial numbers that don't increase with increasing frame number
+        error_rows = [i for i in range(1, len(self.events)) if self.events[i].trial < self.events[i-1].trial]
+        if error_rows:
+            all_error_rows += error_rows
+            msg.append('Trial numbers are not increasing with increasing timestamp')
+        for i, e in enumerate(self.events):
+            if i:
+                if self.events[i].trial < self.events[i-1].trial:
+                    error_rows
+
         return all_error_rows, msg
 
 
