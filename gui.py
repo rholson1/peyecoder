@@ -361,6 +361,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.message_box = QLabel()
         self.message_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.message_box.setStyleSheet('color: red;')
 
         layout = QVBoxLayout()
         layout.addWidget(self.image_frame)
@@ -789,7 +790,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.video_source = filename
 
             self.initialize_video()
-            self.audio.set_video_source(self.video_source)
+            try:
+                self.audio.set_video_source(self.video_source)
+            except FileNotFoundError as e:
+                # probably missing ffmpeg
+                self.message_box.setText(e.strerror)
             self.enable_controls()
 
     def open_datafile(self):
