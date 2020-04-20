@@ -3,7 +3,7 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
     QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QCheckBox, QPlainTextEdit, QFrame, \
-    QTableWidget, QHeaderView, QTableWidgetItem, QSpacerItem
+    QTableWidget, QHeaderView, QTableWidgetItem
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator
 from PySide2.QtCore import QRect, QRegExp, Signal
@@ -636,6 +636,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.timecode_offsets[self.vid.frame_number] = new_frame_number - self.vid.frame_number
             self.update_timecode()
             # update log table so that timestamps are correct
+            self.update_log()
 
     def handle_keypress(self, e):
         if e.key() == Qt.Key_Right:
