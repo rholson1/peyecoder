@@ -382,7 +382,7 @@ class MainWindow(QtWidgets.QMainWindow):
         wid = QtWidgets.QWidget(self)
         self.setCentralWidget(wid)
         #wid.keyPressEvent = self.test_keypress_event
-        wid.keyReleaseEvent = self.handle_keypress  # works for arrows, unlike keyPressEvent
+        #wid.keyReleaseEvent = self.handle_keypress  # works for arrows, unlike keyPressEvent
 
         wid.setLayout(layout3)
 
@@ -637,6 +637,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.update_timecode()
             # update log table so that timestamps are correct
             self.update_log()
+
+    def keyReleaseEvent(self, e: QtGui.QKeyEvent):
+        super().keyReleaseEvent(e)
+        self.handle_keypress(e)
 
     def handle_keypress(self, e):
         if e.key() == Qt.Key_Right:
