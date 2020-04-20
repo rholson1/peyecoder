@@ -576,7 +576,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.open_subject_action.setStatusTip('Open Subject Information Window')
         self.open_subject_action.triggered.connect(self.open_subject_dialog)
 
-        self.open_occluders_action = QAction('Occluders', self)
+        self.open_occluders_action = QAction('&Occluders', self)
         self.open_occluders_action.setStatusTip('Open Occluder Window')
         self.open_occluders_action.triggered.connect(self.open_occluder_dialog)
 
@@ -590,10 +590,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         edit_menu = menu_bar.addMenu('&Edit')
         edit_menu.addAction(self.synchronize_action)
-
-        view_menu = menu_bar.addMenu('&View')
-        view_menu.addAction(self.open_subject_action)
-        view_menu.addAction(self.open_occluders_action)
+        edit_menu.addSeparator()
+        edit_menu.addAction(self.open_subject_action)
+        edit_menu.addAction(self.open_occluders_action)
 
     def resynchronize(self):
         # Prompt user to enter a new timestamp for the current frame
