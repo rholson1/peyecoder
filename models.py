@@ -31,6 +31,9 @@ class Subject:
     def to_dict(self):
         return self._d
 
+    def __getitem__(self, item):
+        return self._d.__getitem__(item)
+
 
 class Reason:
     def __init__(self, trial=0, include=False, reason=''):
@@ -133,7 +136,10 @@ class Reasons:
 
     def unused(self):
         """List of trials prescreened out by prescreener 1"""
-        return [v.trial for v in self.ps[0].values() if not v.include]
+        return [v.trial for v in self.ps[0].values() if not v._include]
+
+    def get_unused_display(self):
+        return ', '.join([str(s) for s in self.unused()])
 
 
 @total_ordering
@@ -563,6 +569,9 @@ class TrialOrder:
             return self.data[0]['Name']
         else:
             return 'No Trial Order loaded'
+
+    def get_unused_display(self):
+        return ', '.join([str(s) for s in self.unused])
 
     def calc_unused(self):
         self.unused = [d['Trial Number'] for d in self.data if d['Used'] == 'no']

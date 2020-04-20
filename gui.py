@@ -3,7 +3,7 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
     QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QCheckBox, QPlainTextEdit, QFrame, \
-    QTableWidget, QHeaderView, QTableWidgetItem
+    QTableWidget, QHeaderView, QTableWidgetItem, QSpacerItem
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator
 from PySide2.QtCore import QRect, QRegExp, Signal
@@ -193,7 +193,7 @@ class SubjectDialog(QDialog):
             'Sex': self.sex_radiogroup.checkedId() == 1,  # True for Male, False, for Female
             'Birthday': self.dob_box.text(),
             'Date of Test': self.participation_date_box.text(),
-            'Trial Order': self.parent().trial_order.name(),
+            'Order': self.parent().trial_order.name(),
             'Primary PS': self.ps1_box.text(),
             'Primary PS Complete': self.ps1_checkbox.isChecked(),
             'Secondary PS': self.ps2_box.text(),
@@ -205,6 +205,7 @@ class SubjectDialog(QDialog):
         }
 
         self.parent().subject.update_from_dict(d)
+        self.parent().update_info_panel()
 
     def update_from_dict(self, d):
         self.subject_box.setText(str(d.get('Number', '')))
@@ -354,10 +355,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Create layouts to place inside widget
         control_layout = self.build_playback_widgets()
         step_layout = self.build_step_widgets()
-
         tab_widget = self.build_tabs()
-
         table_widget = self.build_table()
+        info_grid = self.build_info_panel()
 
         self.message_box = QLabel()
         self.message_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
@@ -375,6 +375,7 @@ class MainWindow(QtWidgets.QMainWindow):
         layout3 = QVBoxLayout()
         layout3.addLayout(layout2)
         layout3.addWidget(tab_widget)
+        layout3.addLayout(info_grid)
         layout3.addWidget(self.message_box)
 
         # Create a widget for window contents
@@ -451,6 +452,39 @@ class MainWindow(QtWidgets.QMainWindow):
         step_layout.addWidget(self.timecode_label)
         return step_layout
 
+    def build_info_panel(self):
+        # build information display widgets for the bottom of the screen
+        # info panel at bottom of screen
+        subject_number_label = QLabel('Subject Number :')
+        subject_number_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.subject_number_box = QLabel('')
+        self.subject_number_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        order_label = QLabel('Order :')
+        order_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.order_label_box = QLabel('')
+        self.order_label_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        unused_label = QLabel('Unused Trials :')
+        unused_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.unused_box = QLabel('')
+        self.unused_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        prescreened_label = QLabel('Prescreened out :')
+        prescreened_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.prescreened_box = QLabel('')
+        self.prescreened_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        info_grid = QGridLayout()
+        info_grid.addWidget(subject_number_label, 0, 0, alignment=Qt.AlignRight)
+        info_grid.addWidget(self.subject_number_box, 0, 1, alignment=Qt.AlignLeft)
+        info_grid.addWidget(order_label, 0, 3, alignment=Qt.AlignRight)
+        info_grid.addWidget(self.order_label_box, 0, 4, alignment=Qt.AlignLeft)
+        info_grid.addWidget(unused_label, 1, 0, alignment=Qt.AlignRight)
+        info_grid.addWidget(self.unused_box, 1, 1, alignment=Qt.AlignLeft)
+        info_grid.addWidget(prescreened_label, 1, 3, alignment=Qt.AlignRight)
+        info_grid.addWidget(self.prescreened_box, 1, 4, alignment=Qt.AlignLeft)
+        info_grid.setColumnStretch(1, 2)
+        info_grid.setColumnMinimumWidth(0, 160)
+        info_grid.setColumnMinimumWidth(4, 200)
+        return info_grid
+
     def build_table(self):
         self.logtable = LogTable()
         self.logtable.setColumnCount(3)
@@ -518,6 +552,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def add_reason(self, reason):
         self.reasons.add_reason(reason, ps=self.prescreen_tab.group_who.checkedId())
         self.update_log()
+        self.update_info_panel()
 
     def add_event(self, event):
         event.frame = self.vid.frame_number
@@ -621,7 +656,6 @@ class MainWindow(QtWidgets.QMainWindow):
         elif e.key() == Qt.Key_Minus:
             if self.logtable.has_selection():
                 self.change_selected_trials(-1)
-                #self.logtable.decrement_selected()
             else:
                 self.change_trial(-1)
         elif e.key() in (Qt.Key_Enter, Qt.Key_Return):
@@ -634,8 +668,8 @@ class MainWindow(QtWidgets.QMainWindow):
             selected_rows = self.logtable.selected_rows()
             self.logtable.delete_selected()
             self.delete_data_rows(selected_rows)
-
             self.update_log()  # necessary only to update row highlighting if error status has changed
+            self.update_info_panel()
         elif e.key() == self.settings.get('Toggle Trial Status Key', None):
             # toggle between 0 and 1
             self.code_tab.trial_status.setCurrentIndex(not self.code_tab.trial_status.currentIndex())
@@ -658,6 +692,7 @@ class MainWindow(QtWidgets.QMainWindow):
             for r in rows:
                 self.events.change_trial(r, delta)
         self.update_log()
+        self.update_info_panel()
 
     def change_trial(self, delta):
         if self.active_tab == TAB_PRESCREEN:
@@ -844,6 +879,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 d['Settings']['Response Keys'] = intify_keys(d['Settings']['Response Keys'])
             self.settings.update(d['Settings'])
         self.subject.update_from_dict(d)
+        self.update_info_panel()
+
+    def update_info_panel(self):
+        # Refresh the info panel widgets
+        self.subject_number_box.setText(str(self.subject['Number']))
+        self.order_label_box.setText(self.subject['Order'])
+        self.unused_box.setText(self.trial_order.get_unused_display())
+        self.prescreened_box.setText(self.reasons.get_unused_display())
 
     def play(self):
         t0 = time.perf_counter()
