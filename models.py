@@ -286,6 +286,9 @@ class Events:
                 if self.events[i].trial < self.events[i-1].trial:
                     error_rows
 
+        #4. Check for invalid sequences within trials.
+        # TBD
+
         return all_error_rows, msg
 
 
