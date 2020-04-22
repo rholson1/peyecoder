@@ -2,7 +2,7 @@
 
 from PySide2.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QSpinBox, QComboBox, \
     QRadioButton, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem, QCheckBox, \
-    QButtonGroup
+    QButtonGroup, QHeaderView
 
 from PySide2.QtGui import Qt
 from PySide2.QtCore import QRect
@@ -444,7 +444,7 @@ class LogTable(QTableWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.verticalHeader().setVisible(False)
         self.setSelectionBehavior(QTableWidget.SelectRows)
         self.setFocusPolicy(Qt.NoFocus)

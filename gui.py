@@ -3,7 +3,7 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
     QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QCheckBox, QPlainTextEdit, QFrame, \
-    QTableWidget, QHeaderView, QTableWidgetItem
+    QTableWidget, QHeaderView, QTableWidgetItem, QSplitter
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator
 from PySide2.QtCore import QRect, QRegExp, Signal
@@ -126,6 +126,9 @@ class SubjectDialog(QDialog):
         self.notes_box = QPlainTextEdit()
         self.notes_box.textChanged.connect(self.sync_fields)
 
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok)
+        self.button_box.accepted.connect(self.accept)
+
         grid = QGridLayout()
         r = 1
         grid.addWidget(self.subject_label, r, 0)
@@ -166,7 +169,11 @@ class SubjectDialog(QDialog):
         grid.addWidget(self.notes_label, r, 0)
         grid.addWidget(self.notes_box, r, 1)
 
-        self.setLayout(grid)
+        layout = QVBoxLayout()
+        layout.addLayout(grid)
+        layout.addWidget(self.button_box)
+
+        self.setLayout(layout)
 
         self.update_from_dict(self.parent().subject.to_dict())
 
@@ -367,13 +374,19 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(self.image_frame)
         layout.addLayout(control_layout)
         layout.addLayout(step_layout)
+        # Enclose the layout in a widget because children of QSplitter must be widgets, not layouts.
+        container = QtWidgets.QWidget()
+        container.setLayout(layout)
 
-        layout2 = QHBoxLayout()
-        layout2.addLayout(layout)
-        layout2.addWidget(table_widget)
+        splitter = QSplitter()
+        splitter.addWidget(container)
+        splitter.addWidget(table_widget)
+        splitter.setCollapsible(0, False)
+        splitter.setCollapsible(1, False)
+        splitter.splitterMoved.connect(self.splitter_moved)
 
         layout3 = QVBoxLayout()
-        layout3.addLayout(layout2)
+        layout3.addWidget(splitter)
         layout3.addWidget(tab_widget)
         layout3.addLayout(info_grid)
         layout3.addWidget(self.message_box)
@@ -952,6 +965,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def resizeEvent(self, event: QtGui.QResizeEvent):
         super().resizeEvent(event)
+        self.show_frame()  # update (and resize) the display of the current frame
+
+    def splitter_moved(self, pos, index):
+        """Splitter between video and log table moved"""
         self.show_frame()  # update (and resize) the display of the current frame
 
 
