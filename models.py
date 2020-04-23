@@ -136,6 +136,27 @@ class Reasons:
     def get_unused_display(self):
         return ', '.join([str(s) for s in self.unused()])
 
+    def to_plist(self):
+        """ Return data ready to write to plist file """
+        def prepack(d):
+            return {'Pre-Screen Entry {}'.format(k): {
+                'Eliminate': not v._include,
+                'Reason': v.reason,
+                'Trial': v.trial
+            } for k, v in d.items()}
+
+        return {
+            'Pre-Screen Array 0': prepack(self.ps[0]),
+            'Pre-Screen Array 1': prepack(self.ps[1])
+        }
+
+    @staticmethod
+    def from_plist(d):
+        """Import data from data file"""
+        return Reasons(*[{v['Trial']: Reason(v['Trial'], not v['Eliminate'], v['Reason'])
+                          for v in d['Pre-Screen Array {}'.format(i)].values()}
+                         for i in (0, 1)])
+
 
 @total_ordering
 class Event:

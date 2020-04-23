@@ -584,12 +584,8 @@ class MainWindow(QtWidgets.QMainWindow):
         data = {}
         data['Occluders'] = self.occluders.to_dictlist()
         data['Timecode Offsets'] = self.timecode_offsets.to_plist()
-        data['Pre-Screen Information'] = {
-            'Pre-Screen Array 0': self.reasons.ps[0],
-            'Pre-Screen Array 1': self.reasons.ps[1]
-        }
+        data['Pre-Screen Information'] = self.reasons.to_plist()
         data['Responses'] = self.events.to_plist()
-
         data['Settings'] = self.settings
         data['Settings']['Response Keys'] = stringify_keys(self.settings['Response Keys'])
 
@@ -606,16 +602,16 @@ class MainWindow(QtWidgets.QMainWindow):
         if 'Timecode Offsets' in d:
             self.timecode_offsets = Offsets.from_plist(d['Timecode Offsets'])
         if 'Pre-Screen Information' in d:
-            self.reasons = Reasons(d['Pre-Screen Information'].get('Pre-Screen Array 0', []),
-                                   d['Pre-Screen Information'].get('Pre-Screen Array 1', []))
+            self.reasons = Reasons.from_plist(d['Pre-Screen Information'])
         if 'Responses' in d:
             self.events = Events.from_plist(d['Responses'])
-
         if 'Settings' in d:
             if 'Response Keys' in d['Settings']:
                 d['Settings']['Response Keys'] = intify_keys(d['Settings']['Response Keys'])
             self.settings.update(d['Settings'])
         self.subject.update_from_dict(d)
+
+        self.update_log()
         self.update_info_panel()
 
     def update_info_panel(self):
