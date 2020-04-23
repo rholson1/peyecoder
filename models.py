@@ -162,7 +162,8 @@ class Event:
         return self.frame < other.frame
 
     def __str__(self):
-        return 'Trial: {}, Status: {}, Response: {}, Frame: {}'.format(self.trial, self.status, self.response, self.frame)
+        return 'Trial: {}, Status: {}, Response: {}, Frame: {}'.format(
+            self.trial, self.status, self.response, self.frame)
 
 
 # This version of Events only allows one event per timecode
@@ -276,24 +277,26 @@ class Events:
         if error_rows:
             all_error_rows += error_rows
             msg.append('Trial numbers are not increasing with increasing timestamp')
-        for i, e in enumerate(self.events):
-            if i:
-                if self.events[i].trial < self.events[i-1].trial:
-                    error_rows
 
-        #4. Check for invalid sequences within trials.
-        # TBD
+        # 4. Check for invalid sequences within trials.
+        # must not have 2 consecutive events with a response in ('left', 'right') within a trial
+        error_rows = []
+        for i in range(1, len(self.events)):
+            if self.events[i-1].trial == self.events[i].trial and \
+                    self.events[i-1].response in ('left', 'right') and \
+                    self.events[i].response in ('left', 'right'):
+                error_rows.append(i)
+        if error_rows:
+            all_error_rows += error_rows
+            msg.append('Cannot have consecutive "right" and/or "left" events in a trial')
 
         return all_error_rows, msg
-
 
     def __getitem__(self, item):
         return self.events.__getitem__(item)
 
     def __getattr__(self, item):
         return getattr(self.events, item)
-
-
 
 
 class Offsets(SortedDict):
