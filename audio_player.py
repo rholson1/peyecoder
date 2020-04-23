@@ -17,6 +17,7 @@ class VideoAudioPlayer:
     def __init__(self, video_source=None):
 
         self.video_filename = ''
+        self.audio_filename = ''
         self.audio_player = None
         if video_source:
             self.set_video_source(video_source)
@@ -47,13 +48,13 @@ class VideoAudioPlayer:
 
 
 class AudioPlayer:
-    def __init__(self, source, steps_per_second=30):
+    def __init__(self, audio_filename, steps_per_second=30):
         """
-        :param source: filename of the audio file to be played
+        :param audio_filename: filename of the audio file to be played
         :param steps_per_second: size of steps used for navigation in file, specified as a rate.  Corresponds to the
         framerate of the corresponding video
         """
-        self.reader = wave.open(source, 'rb')
+        self.reader = wave.open(audio_filename, 'rb')
         self.params = self.reader.getparams()  # (nchannels, sampwidth, framerate, nframes, comptype, compname)
         self.chunk_size = int(self.params.framerate / steps_per_second)
 
@@ -106,27 +107,4 @@ class AudioPlayer:
 
     def stop(self):
         self.playing = False
-
-
-
-
-
-if __name__ == '__main__':
-
-    # Test AudioPlayer
-
-    # source = r'M:\work\iCoder\sample_data\output-audio.wav'
-    source = r'/home/rob/documents/waisman-work/peyecoder/samples/output-audio.wav'
-    with AudioPlayer(source) as audioplayer:
-        print(audioplayer.params)
-        time.sleep(2)
-        print(audioplayer.tell())
-        audioplayer.play()
-        print(audioplayer.tell())
-        time.sleep(1)
-        print(audioplayer.tell())
-        time.sleep(10)
-        print(audioplayer.tell())
-
-
 

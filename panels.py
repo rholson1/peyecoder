@@ -1,11 +1,12 @@
 
-from PySide2.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QSpinBox, QComboBox, \
+from PySide2.QtWidgets import QWidget, QLabel, QPushButton, QSpinBox, QComboBox, \
     QRadioButton, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem, QCheckBox, \
     QButtonGroup, QHeaderView
 
 from PySide2.QtGui import Qt
 
 from models import Reason, Event
+
 
 class Prescreen(QWidget):
     REASONS = (
@@ -176,7 +177,6 @@ class LogTable(QTableWidget):
     def load_data(self, data):
         self.data = data
         # update table from self.data
-        #self.setRowCount(len(self.data))
         self.setRowCount(0)
         for entry in self.data:
             self._add_row(entry)

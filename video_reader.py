@@ -78,7 +78,6 @@ class BufferedVideoReader(VideoReader):
     def goto_framenumber(self, target_frame):
         if target_frame < self.buffer[0][0]:
             # reload file to get to frame
-            #self.reset()
             if target_frame < self.buffer_len:
                 self.seek(0)
                 # fill buffer

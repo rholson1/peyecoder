@@ -3,10 +3,10 @@ import time
 import math
 
 from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, QSlider, QStyle, \
+from PySide2.QtWidgets import QLabel, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
     QTabWidget, QSplitter
-from PySide2.QtGui import Qt, QIntValidator
+from PySide2.QtGui import Qt
 
 import timecode
 import PIL.Image, PIL.ImageTk
@@ -105,8 +105,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # Create a widget for window contents
         wid = QtWidgets.QWidget(self)
         self.setCentralWidget(wid)
-        #wid.keyPressEvent = self.test_keypress_event
-        #wid.keyReleaseEvent = self.handle_keypress  # works for arrows, unlike keyPressEvent
+        # wid.keyPressEvent = self.test_keypress_event
+        # wid.keyReleaseEvent = self.handle_keypress  # works for arrows, unlike keyPressEvent
 
         wid.setLayout(layout3)
 
@@ -120,7 +120,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.play_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.play_button.clicked.connect(self.toggle_state)
         self.play_button.setFocusPolicy(Qt.NoFocus)
-
 
         self.mute_button = QPushButton()
         self.mute_button.setIcon(self.style().standardIcon(QStyle.SP_MediaVolume))
@@ -229,7 +228,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.prescreen_tab.group_who.buttonClicked.connect(self.update_log)
         self.prescreen_tab.both_checkbox.stateChanged.connect(self.update_log)
         self.code_tab = Code(self.add_event)
-        self.code_tab.set_responses(list(self.settings['Response Keys'].values()))  # placeholder, will come from settings
+        self.code_tab.set_responses(list(self.settings['Response Keys'].values()))
         self.tab_widget.addTab(self.prescreen_tab, 'Prescreen')
         self.tab_widget.addTab(self.code_tab, 'Code')
         self.tab_widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
@@ -246,10 +245,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_log(self):
         """Update data and labels in log file"""
-        if self.active_tab == TAB_PRESCREEN:  # Prescreen
+        if self.active_tab == TAB_PRESCREEN:
             self.logtable.set_prescreen_labels(self.prescreen_tab.prescreener())
             self.logtable.load_data(self.reasons.render(self.prescreen_tab.prescreener()))
-        elif self.active_tab == TAB_CODE:  # Code
+        elif self.active_tab == TAB_CODE:
             self.logtable.set_code_labels()
             self.logtable.load_data(self.events.render(self.timecode_offsets, self.timecode))
 
@@ -271,7 +270,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.code_tab.trial_status.setCurrentText(self.events[row].status)
                 self.code_tab.response_box.setCurrentText(self.events[row].response)
                 self.update_position(self.events[row].frame)
-
 
     def add_reason(self, reason):
         self.reasons.add_reason(reason, ps=self.prescreen_tab.group_who.checkedId())

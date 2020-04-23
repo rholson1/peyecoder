@@ -1,8 +1,8 @@
 from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, QSlider, QStyle, \
-    QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
-    QRadioButton, QButtonGroup, QDialogButtonBox, QTabWidget, QCheckBox, QPlainTextEdit, QFrame, \
-    QTableWidget, QHeaderView, QTableWidgetItem, QSplitter
+from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, \
+    QHBoxLayout, QVBoxLayout, QGridLayout, QDialog, \
+    QRadioButton, QButtonGroup, QDialogButtonBox, QCheckBox, QPlainTextEdit, QFrame, \
+    QTableWidget, QHeaderView, QTableWidgetItem
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator, QKeySequence
 from PySide2.QtCore import QRect, QRegExp, Signal
@@ -25,13 +25,12 @@ class FileDropTarget(QLabel):
         self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
         self.filename = ''
 
-    def dragEnterEvent(self, event:QtGui.QDragEnterEvent):
+    def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
         data = event.mimeData()
         if data.hasFormat('text/uri-list'):
             event.acceptProposedAction()
 
-
-    def dropEvent(self, event:QtGui.QDropEvent):
+    def dropEvent(self, event: QtGui.QDropEvent):
         file_url = event.mimeData().text().strip()  # works with Nautilus, but not Thunar
         if not file_url:
             file_url = event.mimeData().urls()[0].url()  # works with Thunar and Nautilus
@@ -356,7 +355,7 @@ class KeyTableWidget(QTableWidget):
         self.removeRow(row)
         del self.data[row]
 
-    def keyPressEvent(self, event:QtGui.QKeyEvent):
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
         if self.currentColumn() == 0:
             row = self.currentRow()
             text = QKeySequence(event.key()).toString()
@@ -384,7 +383,7 @@ class KeyWidget(QLineEdit):
     def get_key(self):
         return self._key
 
-    def keyPressEvent(self, event:QtGui.QKeyEvent):
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
         self.set_key(event.key())
 
 
@@ -399,15 +398,12 @@ class SettingsDialog(QDialog):
         self.step_box.setFixedWidth(32)
         step_validator = QIntValidator(1, 99)
         self.step_box.setValidator(step_validator)
-        #self.step_box.textChanged.connect(self.parent().update_step)
         step_layout = QHBoxLayout()
-        #step_layout.addWidget(step_label)
         step_layout.addWidget(self.step_box)
         step_layout.addWidget(QLabel('frames'))
 
         response_label = QLabel('Response Keys')
         self.key_table = KeyTableWidget()
-        #self.key_table.cellChanged.connect(self.key_table.cellChangeda)
         self.add_row_button = QPushButton('Add row')
         self.add_row_button.clicked.connect(self.key_table.add_row)
         self.del_row_button = QPushButton('Delete row')
@@ -436,9 +432,6 @@ class SettingsDialog(QDialog):
 
         layout = QVBoxLayout()
         layout.addLayout(grid)
-        #layout.addWidget(response_label)
-        #layout.addWidget(self.key_table)
-        #layout.addWidget(self.add_row_button)
 
         layout.addWidget(self.button_box)
 
@@ -463,5 +456,3 @@ class SettingsDialog(QDialog):
     def accept(self):
         self.save_settings()
         super().accept()
-
-
