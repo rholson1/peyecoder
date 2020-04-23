@@ -166,8 +166,8 @@ class SubjectDialog(QDialog):
 
     def update_trial_order(self, filename):
         """ When a trial order file is dragged into the subject dialog, read the file into TrialOrder object"""
-        self.parent().trial_order.read_trial_order(filename)
-        self.trial_order_box.setText(self.parent().trial_order.name())
+        self.parent().subject.trial_order.read_trial_order(filename)
+        self.trial_order_box.setText(self.parent().subject.trial_order.name())
         self.sync_fields()
 
     def update_age(self):
@@ -187,7 +187,7 @@ class SubjectDialog(QDialog):
             'Sex': self.sex_radiogroup.checkedId() == 1,  # True for Male, False, for Female
             'Birthday': self.dob_box.text(),
             'Date of Test': self.participation_date_box.text(),
-            'Order': self.parent().trial_order.name(),
+            'Order': self.parent().subject.trial_order.name(),
             'Primary PS': self.ps1_box.text(),
             'Primary PS Complete': self.ps1_checkbox.isChecked(),
             'Secondary PS': self.ps2_box.text(),
@@ -205,9 +205,10 @@ class SubjectDialog(QDialog):
         self.subject_box.setText(str(d.get('Number', '')))
         if 'Sex' in d:
             self.male_radio.setChecked(d['Sex'])
+            self.female_radio.setChecked(not d['Sex'])
         self.dob_box.setText(d.get('Birthday', ''))
         self.participation_date_box.setText(d.get('Date of Test', ''))
-        self.trial_order_box.setText(self.parent().trial_order.name())
+        self.trial_order_box.setText(self.parent().subject.trial_order.name())
         self.ps1_box.setText(d.get('Primary PS', ''))
         self.ps1_checkbox.setChecked(d.get('Primary PS Complete', False))
         self.ps2_box.setText(d.get('Secondary PS', ''))
@@ -280,7 +281,7 @@ class OccluderDialog(QDialog):
         self.add_row()
 
     def load_occluders(self):
-        for rect in self.parent().occluders:
+        for rect in self.parent().subject.occluders:
             row = self.table.rowCount()
             self.add_row()
             for col, item in enumerate(rect.getRect()):
@@ -296,7 +297,7 @@ class OccluderDialog(QDialog):
                 # AttributeError occurs for blank cells
                 # ValueError occurs for cells containing non-integer text
                 pass
-        self.parent().occluders = Occluders(occluders)
+        self.parent().subject.occluders = Occluders(occluders)
 
     def add_row(self):
         self.table.setRowCount(self.table.rowCount() + 1)
@@ -394,7 +395,7 @@ class SettingsDialog(QDialog):
         self.setWindowTitle('Settings')
 
         step_label = QLabel('Step')
-        self.step_box = QLineEdit(str(self.parent().settings['Step']))
+        self.step_box = QLineEdit(str(self.parent().subject.settings['Step']))
         self.step_box.setFixedWidth(32)
         step_validator = QIntValidator(1, 99)
         self.step_box.setValidator(step_validator)
@@ -438,13 +439,13 @@ class SettingsDialog(QDialog):
         self.setLayout(layout)
 
     def load_settings(self):
-        d = self.parent().settings
+        d = self.parent().subject.settings
         self.step_box.setText(str(d.get('Step', '')))
         self.key_table.from_dict(d['Response Keys'])
         self.toggle_box.set_key(d.get('Toggle Trial Status Key'))
 
     def save_settings(self):
-        d = self.parent().settings
+        d = self.parent().subject.settings
         d['Step'] = int(self.step_box.text())
         d['Response Keys'] = self.key_table.to_dict()
         d['Toggle Trial Status Key'] = self.toggle_box.get_key()

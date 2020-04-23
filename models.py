@@ -1,6 +1,6 @@
 # Data models for peyecoder
 
-from PySide2.QtCore import QRect
+from PySide2.QtCore import QRect, Qt
 
 from sortedcontainers import SortedDict, SortedList
 from functools import total_ordering
@@ -8,6 +8,8 @@ from collections import Counter
 
 from timecode import Timecode
 import csv
+
+from file_utils import stringify_keys, intify_keys
 
 
 class Subject:
@@ -19,6 +21,23 @@ class Subject:
     def __init__(self):
         self._d = {}
 
+        self.occluders = Occluders()
+        self.timecode_offsets = Offsets()
+        self.reasons = Reasons()
+        self.events = Events()
+        self.trial_order = TrialOrder()
+        self.settings = {  # Set some default values
+            'Step': 10,
+            'Toggle Trial Status Key': int(Qt.Key_6),
+            'Response Keys': {
+                int(Qt.Key_1): 'left',
+                int(Qt.Key_2): 'off',
+                int(Qt.Key_3): 'right',
+                int(Qt.Key_4): 'away',
+                int(Qt.Key_5): 'center'
+            }
+        }
+
     def update_from_dict(self, d):
         for f in self.fieldnames:
             self._d[f] = d.get(f, '')
@@ -28,6 +47,34 @@ class Subject:
 
     def __getitem__(self, item):
         return self._d.__getitem__(item)
+
+    def to_plist(self):
+        data = {}
+        data['Occluders'] = self.occluders.to_dictlist()
+        data['Timecode Offsets'] = self.timecode_offsets.to_plist()
+        data['Pre-Screen Information'] = self.reasons.to_plist()
+        data['Responses'] = self.events.to_plist()
+        data['Settings'] = self.settings
+        data['Settings']['Response Keys'] = stringify_keys(self.settings['Response Keys'])
+        data.update(self.to_dict())
+
+        return {'Subject': data}
+
+    def from_plist(self, data):
+        d = data['Subject']
+        if 'Occluders' in d:
+            self.occluders = Occluders.from_dictlist(d['Occluders'])
+        if 'Timecode Offsets' in d:
+            self.timecode_offsets = Offsets.from_plist(d['Timecode Offsets'])
+        if 'Pre-Screen Information' in d:
+            self.reasons = Reasons.from_plist(d['Pre-Screen Information'])
+        if 'Responses' in d:
+            self.events = Events.from_plist(d['Responses'])
+        if 'Settings' in d:
+            if 'Response Keys' in d['Settings']:
+                d['Settings']['Response Keys'] = intify_keys(d['Settings']['Response Keys'])
+            self.settings.update(d['Settings'])
+        self.update_from_dict(d)
 
 
 class Reason:

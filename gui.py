@@ -51,23 +51,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.timecode = timecode.Timecode('29.97')
         self.timecode.drop_frame = False
 
-        self.timecode_offsets = Offsets()  # Frame difference between position and displayed timecode
-
-        self.trial_order = TrialOrder()
-        self.occluders = Occluders()
-        self.reasons = Reasons()
-        self.events = Events()
-        self.settings = {
-            'Step': 1,
-            'Toggle Trial Status Key': int(Qt.Key_6),
-            'Response Keys': {
-                int(Qt.Key_1): 'left',
-                int(Qt.Key_2): 'off',
-                int(Qt.Key_3): 'right',
-                int(Qt.Key_4): 'away',
-                int(Qt.Key_5): 'center'
-            }
-        }
         self.subject = Subject()
 
         # Create layouts to place inside widget
@@ -152,13 +135,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.next_button.clicked.connect(self.next_frame)
         self.next_button.setFocusPolicy(Qt.NoFocus)
 
-        # self.step_label = QLabel('Step')
-        # self.step_box = QLineEdit(str(self.settings['Step']))
-        # self.step_box.setFixedWidth(32)
-        # step_validator = QIntValidator(1, 99)
-        # self.step_box.setValidator(step_validator)
-        # self.step_box.textChanged.connect(self.update_step)
-
         # Timecode display
         self.timecode_label = QLabel('00:00:00;00')
         self.timecode_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
@@ -169,8 +145,6 @@ class MainWindow(QtWidgets.QMainWindow):
         step_layout = QtWidgets.QHBoxLayout()
         step_layout.addWidget(self.prev_button)
         step_layout.addWidget(self.next_button)
-        #step_layout.addWidget(self.step_label)
-        #step_layout.addWidget(self.step_box)
         step_layout.addStretch()
         step_layout.addWidget(self.timecode_label)
         return step_layout
@@ -228,7 +202,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.prescreen_tab.group_who.buttonClicked.connect(self.update_log)
         self.prescreen_tab.both_checkbox.stateChanged.connect(self.update_log)
         self.code_tab = Code(self.add_event)
-        self.code_tab.set_responses(list(self.settings['Response Keys'].values()))
+        self.code_tab.set_responses(list(self.subject.settings['Response Keys'].values()))
         self.tab_widget.addTab(self.prescreen_tab, 'Prescreen')
         self.tab_widget.addTab(self.code_tab, 'Code')
         self.tab_widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
@@ -247,12 +221,12 @@ class MainWindow(QtWidgets.QMainWindow):
         """Update data and labels in log file"""
         if self.active_tab == TAB_PRESCREEN:
             self.logtable.set_prescreen_labels(self.prescreen_tab.prescreener())
-            self.logtable.load_data(self.reasons.render(self.prescreen_tab.prescreener()))
+            self.logtable.load_data(self.subject.reasons.render(self.prescreen_tab.prescreener()))
         elif self.active_tab == TAB_CODE:
             self.logtable.set_code_labels()
-            self.logtable.load_data(self.events.render(self.timecode_offsets, self.timecode))
+            self.logtable.load_data(self.subject.events.render(self.subject.timecode_offsets, self.timecode))
 
-            errors, err_msg = self.events.error_items(self.trial_order.unused + self.reasons.unused())
+            errors, err_msg = self.subject.events.error_items(self.subject.trial_order.unused + self.subject.reasons.unused())
             self.logtable.redden_rows(errors)
             self.message_box.setText('\n'.join(err_msg))
 
@@ -266,19 +240,19 @@ class MainWindow(QtWidgets.QMainWindow):
                 row = sorted(rows.keys())[0]
 
                 # update trial, status, response, frame
-                self.code_tab.trial_box.setValue(self.events[row].trial)
-                self.code_tab.trial_status.setCurrentText(self.events[row].status)
-                self.code_tab.response_box.setCurrentText(self.events[row].response)
-                self.update_position(self.events[row].frame)
+                self.code_tab.trial_box.setValue(self.subject.events[row].trial)
+                self.code_tab.trial_status.setCurrentText(self.subject.events[row].status)
+                self.code_tab.response_box.setCurrentText(self.subject.events[row].response)
+                self.update_position(self.subject.events[row].frame)
 
     def add_reason(self, reason):
-        self.reasons.add_reason(reason, ps=self.prescreen_tab.group_who.checkedId())
+        self.subject.reasons.add_reason(reason, ps=self.prescreen_tab.group_who.checkedId())
         self.update_log()
         self.update_info_panel()
 
     def add_event(self, event):
         event.frame = self.vid.frame_number
-        self.events.add_event(event)
+        self.subject.events.add_event(event)
         self.update_log()
 
     def delete_data_rows(self, rows):
@@ -288,11 +262,11 @@ class MainWindow(QtWidgets.QMainWindow):
             ps = self.prescreen_tab.prescreener()
             for row in rows:
                 trial = int(rows[row])
-                self.reasons.delete_reason(trial, ps)
+                self.subject.reasons.delete_reason(trial, ps)
         elif self.active_tab == TAB_CODE:  # Code
             # delete code entries by row (in descending order)
             for row in reversed(sorted(rows)):
-                self.events.delete_event(row)
+                self.subject.events.delete_event(row)
 
     def build_menu(self):
         """Create the menu bar and global fixed actions"""
@@ -360,7 +334,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Prompt user to enter a new timestamp for the current frame
         new_frame_number = self.get_timecode_frames()
         if new_frame_number:
-            self.timecode_offsets[self.vid.frame_number] = new_frame_number - self.vid.frame_number
+            self.subject.timecode_offsets[self.vid.frame_number] = new_frame_number - self.vid.frame_number
             self.update_timecode()
             # update log table so that timestamps are correct
             self.update_log()
@@ -402,11 +376,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.delete_data_rows(selected_rows)
             self.update_log()  # necessary only to update row highlighting if error status has changed
             self.update_info_panel()
-        elif e.key() == self.settings.get('Toggle Trial Status Key', None):
+        elif e.key() == self.subject.settings.get('Toggle Trial Status Key', None):
             # toggle between 0 and 1
             self.code_tab.trial_status.setCurrentIndex(not self.code_tab.trial_status.currentIndex())
-        elif e.key() in self.settings.get('Response Keys', {}):
-            self.code_tab.response_box.setCurrentText(self.settings['Response Keys'][e.key()])
+        elif e.key() in self.subject.settings.get('Response Keys', {}):
+            self.code_tab.response_box.setCurrentText(self.subject.settings['Response Keys'][e.key()])
 
     def change_selected_trials(self, delta):
         rows = self.logtable.selected_rows()
@@ -419,10 +393,10 @@ class MainWindow(QtWidgets.QMainWindow):
             # get the trial number from the log table
             for r in rows:
                 trial = self.logtable.data[r][0]
-                self.reasons.change_trial(trial, delta, self.prescreen_tab.prescreener())
+                self.subject.reasons.change_trial(trial, delta, self.prescreen_tab.prescreener())
         elif self.active_tab == TAB_CODE:
             for r in rows:
-                self.events.change_trial(r, delta)
+                self.subject.events.change_trial(r, delta)
         self.update_log()
         self.update_info_panel()
 
@@ -489,11 +463,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def next_step(self):
         # Step forward in video
-        self.change_frame(self.settings['Step'])
+        self.change_frame(self.subject.settings['Step'])
 
     def prev_step(self):
         # Step backward in video
-        self.change_frame(-self.settings['Step'])
+        self.change_frame(-self.subject.settings['Step'])
 
     def show_frame(self):
         """ Display the current frame of video"""
@@ -507,7 +481,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Draw occluders in image
         painter = QtGui.QPainter(image)
-        for occluder in self.occluders:
+        for occluder in self.subject.occluders:
             painter.fillRect(occluder, QtCore.Qt.gray)
         painter.end()
 
@@ -542,7 +516,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show_frame()
 
         # prompt for starting timecode
-        self.timecode_offsets[0] = self.get_timecode_frames()
+        self.subject.timecode_offsets[0] = self.get_timecode_frames()
         self.update_timecode()
 
     def get_timecode_frames(self):
@@ -571,55 +545,24 @@ class MainWindow(QtWidgets.QMainWindow):
     def open_datafile(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Data File", filter="Data Files (*.vcx)") #, QtCore.QDir.homePath())
         if filename != '':
-            self.unpack_data(load_datafile(filename))
+            self.subject.from_plist(load_datafile(filename))
+
+            self.update_log()
+            self.update_info_panel()
             if self.subject_dialog:
                 self.subject_dialog.update_from_dict(self.subject.to_dict())
 
     def save_datafile(self):
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Data File", filter="Data Files (*.vcx)")
         if filename != '':
-            save_datafile(filename, self.pack_data())
-
-    def pack_data(self):
-        data = {}
-        data['Occluders'] = self.occluders.to_dictlist()
-        data['Timecode Offsets'] = self.timecode_offsets.to_plist()
-        data['Pre-Screen Information'] = self.reasons.to_plist()
-        data['Responses'] = self.events.to_plist()
-        data['Settings'] = self.settings
-        data['Settings']['Response Keys'] = stringify_keys(self.settings['Response Keys'])
-
-        data.update(self.subject.to_dict())
-
-        return {'Subject': data}
-
-    def unpack_data(self, data):
-
-        d = data['Subject']
-
-        if 'Occluders' in d:
-            self.occluders = Occluders.from_dictlist(d['Occluders'])
-        if 'Timecode Offsets' in d:
-            self.timecode_offsets = Offsets.from_plist(d['Timecode Offsets'])
-        if 'Pre-Screen Information' in d:
-            self.reasons = Reasons.from_plist(d['Pre-Screen Information'])
-        if 'Responses' in d:
-            self.events = Events.from_plist(d['Responses'])
-        if 'Settings' in d:
-            if 'Response Keys' in d['Settings']:
-                d['Settings']['Response Keys'] = intify_keys(d['Settings']['Response Keys'])
-            self.settings.update(d['Settings'])
-        self.subject.update_from_dict(d)
-
-        self.update_log()
-        self.update_info_panel()
+            save_datafile(filename, self.subject.to_plist())
 
     def update_info_panel(self):
         # Refresh the info panel widgets
         self.subject_number_box.setText(str(self.subject['Number']))
         self.order_label_box.setText(self.subject['Order'])
-        self.unused_box.setText(self.trial_order.get_unused_display())
-        self.prescreened_box.setText(self.reasons.get_unused_display())
+        self.unused_box.setText(self.subject.trial_order.get_unused_display())
+        self.prescreened_box.setText(self.subject.reasons.get_unused_display())
 
     def play(self):
         t0 = time.perf_counter()
@@ -662,7 +605,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_timecode(self):
         # Update timecode display to match current frame number
-        self.timecode.frames = self.vid.frame_number + 1 + self.timecode_offsets.get_offset(self.vid.frame_number)
+        self.timecode.frames = self.vid.frame_number + 1 + self.subject.timecode_offsets.get_offset(self.vid.frame_number)
         self.timecode_label.setText(str(self.timecode))
 
     def update_position(self, position):
