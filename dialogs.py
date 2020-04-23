@@ -32,8 +32,9 @@ class FileDropTarget(QLabel):
 
 
     def dropEvent(self, event:QtGui.QDropEvent):
-        #file_url = event.mimeData().text().strip()  # works with Nautilus, but not Thunar
-        file_url = event.mimeData().urls()[0].url()  # works with Thunar and Nautilus
+        file_url = event.mimeData().text().strip()  # works with Nautilus, but not Thunar
+        if not file_url:
+            file_url = event.mimeData().urls()[0].url()  # works with Thunar and Nautilus
         self.filename = url2pathname(urlparse(file_url).path)
         event.acceptProposedAction()
         self.dropped.emit(self.filename)
