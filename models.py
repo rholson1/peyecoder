@@ -283,6 +283,7 @@ class Events:
         error_rows = []
         for i in range(1, len(self.events)):
             if self.events[i-1].trial == self.events[i].trial and \
+                    self.events[i-1].status == self.events[i].status and \
                     self.events[i-1].response in ('left', 'right') and \
                     self.events[i].response in ('left', 'right'):
                 error_rows.append(i)
