@@ -54,6 +54,7 @@ class Subject:
         data['Timecode Offsets'] = self.timecode_offsets.to_plist()
         data['Pre-Screen Information'] = self.reasons.to_plist()
         data['Responses'] = self.events.to_plist()
+        data['Trial Order'] = self.trial_order.to_plist()
         data['Settings'] = self.settings
         data['Settings']['Response Keys'] = stringify_keys(self.settings['Response Keys'])
         data.update(self.to_dict())
@@ -70,6 +71,8 @@ class Subject:
             self.reasons = Reasons.from_plist(d['Pre-Screen Information'])
         if 'Responses' in d:
             self.events = Events.from_plist(d['Responses'])
+        if 'Trial Order' in d:
+            self.trial_order = TrialOrder.from_plist(d['Trial Order'])
         if 'Settings' in d:
             if 'Response Keys' in d['Settings']:
                 d['Settings']['Response Keys'] = intify_keys(d['Settings']['Response Keys'])
@@ -407,9 +410,13 @@ class Occluders:
 
 
 class TrialOrder:
-    def __init__(self):
-        self.data = []
+    def __init__(self, data=None):
         self.unused = []
+        if data:
+            self.data = data
+            self.calc_unused()
+        else:
+            self.data = []
 
     def name(self):
         if self.data:
@@ -451,3 +458,10 @@ class TrialOrder:
                  #   pass
         self.data = data
         self.calc_unused()
+
+    def to_plist(self):
+        return self.data  # maybe?
+
+    @staticmethod
+    def from_plist(data):
+        return TrialOrder(data)
