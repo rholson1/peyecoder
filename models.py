@@ -5,6 +5,8 @@ from PySide2.QtCore import QRect, Qt
 from sortedcontainers import SortedDict, SortedList
 from functools import total_ordering
 from collections import Counter
+from itertools import groupby
+from operator import attrgetter
 
 from timecode import Timecode
 import csv
@@ -370,6 +372,10 @@ class Events:
     def __getattr__(self, item):
         return getattr(self.events, item)
 
+    def trials(self):
+        """ Compute trials from the list of events"""
+        return {k: list(g) for k, g in groupby(self.events, attrgetter('trial'))}
+
 
 class Offsets(SortedDict):
     """Class to store frame offsets for timecodes in a video"""
@@ -416,11 +422,11 @@ class TrialOrder:
             self.data = data
             self.calc_unused()
         else:
-            self.data = []
+            self.data = {}
 
     def name(self):
         if self.data:
-            return self.data[0]['Name']
+            return list(self.data.values())[0]['Name']
         else:
             return 'No Trial Order loaded'
 
@@ -428,11 +434,11 @@ class TrialOrder:
         return ', '.join([str(s) for s in self.unused])
 
     def calc_unused(self):
-        self.unused = [d['Trial Number'] for d in self.data if d['Used'] == 'no']
+        self.unused = [d['Trial Number'] for d in self.data.values() if d['Used'] == 'no']
 
     def read_trial_order(self, filename):
         """ Read data from a trial order file"""
-        data = []
+        data = {}
 
         with open(filename, 'r', newline='') as f:
             dialect = csv.Sniffer().sniff(f.read(1024), delimiters=',\t')
@@ -441,9 +447,10 @@ class TrialOrder:
 
             for row in reader:
                 #try:
-                data.append({
+                trial_number = int(row.get('Trial Number', 0) or row.get('trial number', 0))
+                data[trial_number] = {
                     'Name': row.get('Name', ''),
-                    'Trial Number': int(row.get('Trial Number', 0) or row.get('trial number', 0)),
+                    'Trial Number': trial_number,
                     'Sound Stimulus': row.get('Sound Stimulus', ''),
                     'Left Image': row.get('Left Image', ''),
                     'Center Image': row.get('Center Image', ''),
@@ -453,7 +460,7 @@ class TrialOrder:
                     'Used': row.get('Used', ''),
                     'Trial End': int(row.get('Trial End', 0) or row.get('TrEnd', 0)),
                     'Critical Onset': int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
-                })
+                }
                 #except ValueError:
                  #   pass
         self.data = data

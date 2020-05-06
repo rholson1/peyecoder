@@ -18,12 +18,27 @@ from panels import Prescreen, Code, LogTable
 from models import Offsets, Occluders, Reasons, Events, TrialOrder, Subject
 from file_utils import load_datafile, save_datafile, stringify_keys, intify_keys
 from dialogs import SubjectDialog, TimecodeDialog, OccluderDialog, SettingsDialog
+from export import export
 
 STATE_PLAYING = 1
 STATE_PAUSED = 2
 
 TAB_PRESCREEN = 0
 TAB_CODE = 1
+
+
+def get_save_filename(parent, caption, filter, default_suffix=''):
+    """ Use a custom save dialog instead of the convenience function to support default suffix"""
+    dialog = QtWidgets.QFileDialog(parent, caption=caption, filter=filter)
+    dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptSave)
+    dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+    if default_suffix:
+        dialog.setDefaultSuffix(default_suffix)
+    if dialog.exec_():
+        filenames = dialog.selectedFiles()
+        if filenames:
+            return filenames[0]
+    return ''
 
 
 class MainEventFilter(QObject):
@@ -311,6 +326,10 @@ class MainWindow(QtWidgets.QMainWindow):
         data_save_action.setStatusTip('Save datafile')
         data_save_action.triggered.connect(self.save_datafile)
 
+        export_action = QAction('E&xport CSV', self)
+        export_action.setStatusTip('Export CSV')
+        export_action.triggered.connect(self.export_csv)
+
         # Create exit action
         exit_action = QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -343,6 +362,9 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(open_action)
         file_menu.addAction(data_open_action)
         file_menu.addAction(data_save_action)
+        file_menu.addSeparator()
+        file_menu.addAction(export_action)
+        file_menu.addSeparator()
         file_menu.addAction(exit_action)
 
         edit_menu = menu_bar.addMenu('&Edit')
@@ -581,9 +603,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.subject_dialog.update_from_dict(self.subject.to_dict())
 
     def save_datafile(self):
-        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Data File", filter="Data Files (*.vcx)")
+        filename = get_save_filename(self, "Save Data File", filter="Data Files (*.vcx)", default_suffix='vcx')
         if filename != '':
             save_datafile(filename, self.subject.to_plist())
+
+    def export_csv(self):
+        filename = get_save_filename(self, "Save CSV File", filter="CSV Files (*.csv)", default_suffix='csv')
+        if filename != '':
+            export(filename, self.subject)
 
     def update_info_panel(self):
         # Refresh the info panel widgets
