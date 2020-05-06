@@ -7,6 +7,7 @@ from PySide2.QtWidgets import QLabel, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
     QTabWidget, QSplitter
 from PySide2.QtGui import Qt
+from PySide2.QtCore import QObject, QEvent
 
 import timecode
 import PIL.Image, PIL.ImageTk
@@ -25,10 +26,24 @@ TAB_PRESCREEN = 0
 TAB_CODE = 1
 
 
+class MainEventFilter(QObject):
+    def eventFilter(self, obj, event):
+        # if event.type() == QEvent.KeyPress:
+        #     print('key pressed: {}, obj={}'.format(event.key(), obj))
+
+        if event.type() == QEvent.MouseButtonPress:
+            if obj != LogTable:
+                self.parent().logtable.clearSelection()
+
+        return QObject.eventFilter(self, obj, event)
+
+
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        self.setFocusPolicy(Qt.ClickFocus)
 
         self.frame_delay = 0  # ms delay between frames when playing video (or maybe use framerate)
         self.state = STATE_PAUSED
@@ -93,6 +108,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         wid.setLayout(layout3)
 
+        # Use event filter to cause mouse clicks away from the log table to
+        # clear the selection (removes focus to fix key handling)
+        eventfilter = MainEventFilter(self)
+        self.installEventFilter(eventfilter)
+
         self.build_menu()
         self.open_subject_dialog()
 
@@ -112,6 +132,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.position_slider = QSlider(QtCore.Qt.Horizontal)
         self.position_slider.setRange(0, 0)
         self.position_slider.sliderMoved.connect(self.setPosition)
+        self.position_slider.setFocusPolicy(Qt.NoFocus)
 
         control_layout = QHBoxLayout()
         control_layout.setContentsMargins(0, 0, 0, 0)
@@ -243,7 +264,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.code_tab.trial_box.setValue(self.subject.events[row].trial)
                 self.code_tab.trial_status.setCurrentText(self.subject.events[row].status)
                 self.code_tab.response_box.setCurrentText(self.subject.events[row].response)
-                self.update_position(self.subject.events[row].frame)
+                if self.vid:
+                    self.update_position(self.subject.events[row].frame)
 
     def add_reason(self, reason):
         self.subject.reasons.add_reason(reason, ps=self.prescreen_tab.group_who.checkedId())
@@ -339,15 +361,21 @@ class MainWindow(QtWidgets.QMainWindow):
             # update log table so that timestamps are correct
             self.update_log()
 
-    def keyReleaseEvent(self, e: QtGui.QKeyEvent):
-        super().keyReleaseEvent(e)
-        self.handle_keypress(e)
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
+        super().keyPressEvent(event)
+        self.handle_keypress(event)
 
     def handle_keypress(self, e):
         if e.key() == Qt.Key_Right:
             self.next_frame()
         elif e.key() == Qt.Key_Left:
             self.prev_frame()
+        elif e.key() == Qt.Key_Up:
+            # forward up/down keypresses to the log table
+            self.logtable.keyPressEvent(e)
+        elif e.key() == Qt.Key_Down:
+            # forward up/down keypresses to the log table
+            self.logtable.keyPressEvent(e)
         elif e.key() == Qt.Key_BracketLeft:
             self.prev_step()
         elif e.key() == Qt.Key_BracketRight:
@@ -633,7 +661,6 @@ class MainWindow(QtWidgets.QMainWindow):
 if __name__ == "__main__":
 
     app = QtWidgets.QApplication([])
-
     widget = MainWindow()
     widget.resize(800, 600)
     widget.show()

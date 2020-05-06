@@ -38,6 +38,9 @@ class Prescreen(QWidget):
         self.code_radio = QRadioButton('Code')
         self.nocode_radio = QRadioButton('Do Not Code')
         self.code_radio.setChecked(True)
+        self.code_radio.setFocusPolicy(Qt.NoFocus)
+        self.nocode_radio.setFocusPolicy(Qt.NoFocus)
+
         radio_layout = QVBoxLayout()
         radio_layout.addStretch()
         radio_layout.addWidget(self.code_radio)
@@ -53,9 +56,12 @@ class Prescreen(QWidget):
         self.record_button.setFocusPolicy(Qt.NoFocus)
 
         self.both_checkbox = QCheckBox('Display both coders')
+        self.both_checkbox.setFocusPolicy(Qt.NoFocus)
         self.radio_primary = QRadioButton('Primary')
         self.radio_secondary = QRadioButton('Secondary')
         self.radio_primary.setChecked(True)
+        self.radio_primary.setFocusPolicy(Qt.NoFocus)
+        self.radio_secondary.setFocusPolicy(Qt.NoFocus)
         who_layout = QVBoxLayout()
         who_layout.addWidget(self.both_checkbox)
         who_layout.addWidget(self.radio_primary)
