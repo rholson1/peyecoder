@@ -11,13 +11,14 @@ from PySide2.QtCore import QObject, QEvent
 
 import timecode
 import PIL.Image, PIL.ImageTk
+import os
 
 from video_reader import BufferedVideoReader
 from audio_player import VideoAudioPlayer
 from panels import Prescreen, Code, LogTable
 from models import Offsets, Occluders, Reasons, Events, TrialOrder, Subject
 from file_utils import load_datafile, save_datafile, stringify_keys, intify_keys
-from dialogs import SubjectDialog, TimecodeDialog, OccluderDialog, SettingsDialog
+from dialogs import SubjectDialog, TimecodeDialog, OccluderDialog, SettingsDialog, CodeComparisonDialog
 from export import export
 
 STATE_PLAYING = 1
@@ -59,6 +60,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
 
         self.setFocusPolicy(Qt.ClickFocus)
+        self.setWindowTitle('peyecoder')
 
         self.frame_delay = 0  # ms delay between frames when playing video (or maybe use framerate)
         self.state = STATE_PAUSED
@@ -69,6 +71,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.occluder_dialog = None
         self.subject_dialog = None
         self.settings_dialog = None
+        self.code_comparison_dialog = None
 
         # open video source
         self.video_source = ''  # r'm:\work\iCoder\sample_data\CueCue_108.mov'
@@ -281,6 +284,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.code_tab.response_box.setCurrentText(self.subject.events[row].response)
                 if self.vid:
                     self.update_position(self.subject.events[row].frame)
+                if self.code_comparison_dialog:
+                    self.code_comparison_dialog.scroll_to_frame(self.subject.events[row].frame)
 
     def add_reason(self, reason):
         self.subject.reasons.add_reason(reason, ps=self.prescreen_tab.group_who.checkedId())
@@ -326,6 +331,10 @@ class MainWindow(QtWidgets.QMainWindow):
         data_save_action.setStatusTip('Save datafile')
         data_save_action.triggered.connect(self.save_datafile)
 
+        reliability_action = QAction('&Reliability', self)
+        reliability_action.setStatusTip('Open reliability file')
+        reliability_action.triggered.connect(self.open_reliability_datafile)
+
         export_action = QAction('E&xport CSV', self)
         export_action.setStatusTip('Export CSV')
         export_action.triggered.connect(self.export_csv)
@@ -364,6 +373,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(data_save_action)
         file_menu.addSeparator()
         file_menu.addAction(export_action)
+        file_menu.addAction(reliability_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
 
@@ -601,16 +611,27 @@ class MainWindow(QtWidgets.QMainWindow):
             self.update_info_panel()
             if self.subject_dialog:
                 self.subject_dialog.update_from_dict(self.subject.to_dict())
+            self.setWindowTitle('peyecoder - {}'.format(os.path.basename(filename)))
 
     def save_datafile(self):
         filename = get_save_filename(self, "Save Data File", filter="Data Files (*.vcx)", default_suffix='vcx')
         if filename != '':
             save_datafile(filename, self.subject.to_plist())
+            self.setWindowTitle('peyecoder - {}'.format(os.path.basename(filename)))
 
     def export_csv(self):
         filename = get_save_filename(self, "Save CSV File", filter="CSV Files (*.csv)", default_suffix='csv')
         if filename != '':
             export(filename, self.subject)
+
+    def open_reliability_datafile(self):
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Reliability Data File", filter="Data Files (*.vcx)") #, QtCore.QDir.homePath())
+        if filename != '':
+            if self.code_comparison_dialog:
+                self.code_comparison_dialog.load_data(filename)
+            else:
+                self.code_comparison_dialog = CodeComparisonDialog(self, filename)
+                self.code_comparison_dialog.show()
 
     def update_info_panel(self):
         # Refresh the info panel widgets

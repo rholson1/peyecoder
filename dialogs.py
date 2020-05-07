@@ -2,7 +2,7 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, \
     QHBoxLayout, QVBoxLayout, QGridLayout, QDialog, \
     QRadioButton, QButtonGroup, QDialogButtonBox, QCheckBox, QPlainTextEdit, QFrame, \
-    QTableWidget, QHeaderView, QTableWidgetItem
+    QTableWidget, QHeaderView, QTableWidgetItem, QSizePolicy
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator, QKeySequence
 from PySide2.QtCore import QRect, QRegExp, Signal
@@ -12,8 +12,11 @@ from urllib.parse import urlparse
 from urllib.request import url2pathname
 
 import timecode
+import os
 
-from models import Occluders
+from models import Occluders, Subject
+from panels import LogTable
+from file_utils import load_datafile
 
 
 class FileDropTarget(QLabel):
@@ -457,3 +460,55 @@ class SettingsDialog(QDialog):
     def accept(self):
         self.save_settings()
         super().accept()
+
+
+class CodeComparisonDialog(QDialog):
+    """Dialog to show code from a second coding session to allow comparison"""
+    def __init__(self, parent, filename=''):
+        super().__init__(parent)
+
+        self.frames = []
+
+        self.subject = Subject()
+        layout = QVBoxLayout()
+        layout.addWidget(self.build_table())
+        self.setLayout(layout)
+
+        if filename:
+            self.load_data(filename)
+
+    def build_table(self):
+        self.logtable = LogTable()
+        self.logtable.setColumnCount(4)
+        self.logtable.setAlternatingRowColors(True)
+        self.logtable.setHorizontalHeaderLabels(self.logtable.Labels.Code)
+
+        self.logtable.setMinimumWidth(400)
+        self.logtable.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+        #self.logtable.itemSelectionChanged.connect(self.select_code_row)
+
+        return self.logtable
+
+    def load_data(self, filename):
+        self.frames = []
+        self.setWindowTitle(os.path.basename(filename))
+        self.subject = Subject()
+        self.subject.from_plist(load_datafile(filename))
+
+        self.update_table()
+
+    def update_table(self):
+        self.logtable.load_data(self.subject.events.render(self.subject.timecode_offsets, self.parent().timecode))
+        self.frames = [e.frame for e in self.subject.events]
+
+    def scroll_to_frame(self, frame):
+        # Scroll to and highlight the row closest to the supplied frame number
+        d = [abs(f - frame) for f in self.frames]
+        row = d.index(min(d))
+        self.logtable.scrollToItem(self.logtable.item(row, 0))
+
+        self.logtable.clearSelection()
+        for c in range(4):
+            self.logtable.item(row, c).setSelected(True)
+
