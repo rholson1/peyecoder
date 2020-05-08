@@ -441,7 +441,7 @@ class TrialOrder:
         data = {}
 
         with open(filename, 'r', newline='') as f:
-            dialect = csv.Sniffer().sniff(f.read(1024), delimiters=',\t')
+            dialect = csv.Sniffer().sniff(f.readline(), delimiters=',\t')
             f.seek(0)
             reader = csv.DictReader(f, dialect=dialect)
 
