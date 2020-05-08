@@ -452,6 +452,8 @@ class SettingsDialog(QDialog):
         d['Step'] = int(self.step_box.text())
         d['Response Keys'] = self.key_table.to_dict()
         d['Toggle Trial Status Key'] = self.toggle_box.get_key()
+        # Update step label on main form
+        self.parent().step_label.setText('Step: {}'.format(d['Step']))
 
     def show(self):
         super().show()

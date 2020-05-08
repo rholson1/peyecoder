@@ -174,6 +174,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.next_button.clicked.connect(self.next_frame)
         self.next_button.setFocusPolicy(Qt.NoFocus)
 
+        self.step_label = QLabel('Step: {}'.format(self.subject.settings['Step']))
+
+
         # Timecode display
         self.timecode_label = QLabel('00:00:00;00')
         self.timecode_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
@@ -184,6 +187,7 @@ class MainWindow(QtWidgets.QMainWindow):
         step_layout = QtWidgets.QHBoxLayout()
         step_layout.addWidget(self.prev_button)
         step_layout.addWidget(self.next_button)
+        step_layout.addWidget(self.step_label)
         step_layout.addStretch()
         step_layout.addWidget(self.timecode_label)
         return step_layout
@@ -643,6 +647,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.order_label_box.setText(self.subject['Order'])
         self.unused_box.setText(self.subject.trial_order.get_unused_display())
         self.prescreened_box.setText(self.subject.reasons.get_unused_display())
+        self.step_label.setText('Step: {}'.format(self.subject.settings['Step']))
 
     def play(self):
         t0 = time.perf_counter()
