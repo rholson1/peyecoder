@@ -296,6 +296,10 @@ class MainWindow(QtWidgets.QMainWindow):
         event.frame = self.vid.frame_number
         self.subject.events.add_event(event)
         self.update_log()
+        # Scroll to the newly-added item
+        row = self.subject.events.index(event)
+        self.logtable.scrollToItem(self.logtable.item(row, 0))
+
 
     def delete_data_rows(self, rows):
         """Delete rows from events or reasons as appropriate """
