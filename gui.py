@@ -347,6 +347,10 @@ class MainWindow(QtWidgets.QMainWindow):
         export_action.setStatusTip('Export CSV')
         export_action.triggered.connect(self.export_csv)
 
+        exportw_action = QAction('Export CSV (Wide)', self)
+        exportw_action.setStatusTip('Export CSV (Wide format)')
+        exportw_action.triggered.connect(self.exportw_csv)
+
         # Create exit action
         exit_action = QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -381,6 +385,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(data_save_action)
         file_menu.addSeparator()
         file_menu.addAction(export_action)
+        file_menu.addAction(exportw_action)
         file_menu.addAction(reliability_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
@@ -631,6 +636,11 @@ class MainWindow(QtWidgets.QMainWindow):
         filename = get_save_filename(self, "Save CSV File", filter="CSV Files (*.csv)", default_suffix='csv')
         if filename != '':
             export(filename, self.subject)
+
+    def exportw_csv(self):
+        filename = get_save_filename(self, "Save CSV File", filter="CSV Files (*.csv)", default_suffix='csv')
+        if filename != '':
+            export(filename, self.subject, format='wide')
 
     def open_reliability_datafile(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Reliability Data File", filter="Data Files (*.vcx)") #, QtCore.QDir.homePath())
