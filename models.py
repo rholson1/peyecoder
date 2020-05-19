@@ -44,6 +44,15 @@ class Subject:
         for f in self.fieldnames:
             self._d[f] = d.get(f, '')
 
+    def get_sex_display(self):
+        sex = self._d.get('Sex', None)
+        if sex is None:
+            return 'N/A'
+        elif sex:
+            return 'M'
+        else:
+            return 'F'
+
     def to_dict(self):
         return self._d
 
@@ -435,11 +444,11 @@ class TrialOrder:
             self.data = data
             self.calc_unused()
         else:
-            self.data = {}
+            self.data = []
 
     def name(self):
         if self.data:
-            return list(self.data.values())[0]['Name']
+            return self.data[0]['Name']
         else:
             return 'No Trial Order loaded'
 
@@ -447,11 +456,11 @@ class TrialOrder:
         return ', '.join([str(s) for s in self.unused])
 
     def calc_unused(self):
-        self.unused = [d['Trial Number'] for d in self.data.values() if d['Used'] == 'no']
+        self.unused = [d['Trial Number'] for d in self.data if d['Used'] == 'no']
 
     def read_trial_order(self, filename):
         """ Read data from a trial order file"""
-        data = {}
+        data = []
 
         with open(filename, 'r', newline='') as f:
             dialect = csv.Sniffer().sniff(f.readline(), delimiters=',\t')
@@ -459,9 +468,8 @@ class TrialOrder:
             reader = csv.DictReader(f, dialect=dialect)
 
             for row in reader:
-                #try:
                 trial_number = int(row.get('Trial Number', 0) or row.get('trial number', 0))
-                data[trial_number] = {
+                data.append({
                     'Name': row.get('Name', ''),
                     'Trial Number': trial_number,
                     'Sound Stimulus': row.get('Sound Stimulus', ''),
@@ -473,9 +481,8 @@ class TrialOrder:
                     'Used': row.get('Used', ''),
                     'Trial End': int(row.get('Trial End', 0) or row.get('TrEnd', 0)),
                     'Critical Onset': int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
-                }
-                #except ValueError:
-                 #   pass
+                })
+
         self.data = data
         self.calc_unused()
 

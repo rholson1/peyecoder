@@ -66,7 +66,7 @@ def export_long(filename, s: Subject):
     """
     fields = ('Sub Num', 'Months', 'Sex', 'Trial Order', 'Trial Number', 'Prescreen Notes',
               'Left Image', 'Center Image', 'Right Image', 'Target Side', 'Condition',
-              'Time', 'Time Centered', 'Accuracy')
+              'Time', 'Time Centered', 'Response', 'Accuracy')
 
     with open(filename, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fields, dialect='excel')
@@ -76,24 +76,25 @@ def export_long(filename, s: Subject):
         data = {
             'Sub Num': s['Number'],
             'Months': '{:0.1f}'.format(age_months(s['Birthday'], s['Date of Test'])),
-            'Sex': s['Sex'],
+            'Sex': s.get_sex_display(),
             'Trial Order': s.trial_order.name(),
             'Prescreen Notes': s['Notes']
         }
 
-        for trial, events in s.events.trials().items():
-            trial_info = s.trial_order.data.get(trial, {})
+        trial_events = s.events.trials()
+        for trial_info in s.trial_order.data:
+            trial_number = trial_info['Trial Number']
+            critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset']))
+            events = trial_events.get(trial_number, [])
+
             data.update({
-                'Trial Number': trial,
+                'Trial Number': trial_number,
                 'Left Image': trial_info.get('Left Image', ''),
                 'Center Image': trial_info.get('Center Image', ''),
                 'Right Image': trial_info.get('Right Image', ''),
                 'Target Side': trial_info.get('Target Side', ''),
                 'Condition': trial_info.get('Condition', '')
             })
-            critical_onset = trial_info.get('Critical Onset', 0)
-            # round critical onset to nearest frame
-            critical_onset = frame2ms(ms2frames(critical_onset))
 
             trial_frames = int(trial_info.get('Trial End', 0) / 100 * 3)
             event_start = 0
@@ -108,7 +109,8 @@ def export_long(filename, s: Subject):
                 for frame in range(event_start, event_end):
                     data.update({
                         'Time': '{:.2f}'.format(frame2ms(frame)),
-                        'Time Centered': '{:.2f}'.format(frame2ms(frame) - critical_onset),
+                        'Time Centered': '{:.2f}'.format(frame2ms(frame) - critical_onset_rounded),
+                        'Response': events[e].response,
                         'Accuracy': accuracy
                     })
                     writer.writerow(data)
@@ -123,29 +125,24 @@ def export_wide(filename, s: Subject):
     columns = ['Sub Num', 'Months', 'Sex', 'Order', 'Tr Num', 'Prescreen Notes',
                'L-image', 'C-image', 'R-image', 'Target Side', 'Target Image', 'Condition',
                'CritOnset']
+
     # remaining columns are for each frame
-    # F0 = critical onset
-    # F33 = next frame
-    # F-33 = previous frame
+    # ...
+    # F-33 : frame before critical onset
+    # F0   : critical onset
+    # F33  : next frame
+    # ...
 
+    # critical onset frames for each trial in trial order (trials may be repeated)
+    trial_cof = [(trial['Trial Number'], ms2frames(trial['Critical Onset'])) for trial in s.trial_order.data]
+    max_pre_onset = max([cof for t, cof in trial_cof])
+    # number of frames coded for each trial
+    trial_frames = {t: events[-1].frame - events[0].frame for t, events in s.events.trials().items()}
+    # frames after critical onset coded for each trial
+    post_onset_frames = [trial_frames.get(t, 0) - cof for t, cof in trial_cof]
+    max_post_onset = max(post_onset_frames)
 
-    # Use critical onset and trial duration from the first trial to prepare headers
-    trials = s.trial_order.data.keys()
-    first_trial = sorted(list(trials))[0]
-    trial_info = s.trial_order.data.get(first_trial, {})
-    critical_onset = trial_info.get('Critical Onset', 0)
-    # round critical onset to nearest frame
-    critical_onset_frames = ms2frames(critical_onset)
-    critical_onset = frame2ms(critical_onset_frames)
-
-    trial_frames = int(trial_info.get('Trial End', 0) / 100 * 3)
-
-    # base number of frames on coded frames
-    max_trial_frames = max([events[-1].frame - events[0].frame for trial, events in s.events.trials().items()])
-
-
-
-    frame_columns = ['F{:.0f}'.format(frame2ms(f - critical_onset_frames)) for f in range(max_trial_frames)]
+    frame_columns = ['F{:.0f}'.format(frame2ms(f - max_pre_onset)) for f in range(max_pre_onset + max_post_onset)]
 
     fields = columns + frame_columns
 
@@ -153,21 +150,25 @@ def export_wide(filename, s: Subject):
         writer = csv.DictWriter(f, fieldnames=fields, dialect='excel')
         writer.writeheader()
 
-        for trial, events in s.events.trials().items():
-            trial_info = s.trial_order.data.get(trial, {})
+        trial_events = s.events.trials()
+        for trial_info in s.trial_order.data:
+            trial_number = trial_info['Trial Number']
+            critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset']))
+            events = trial_events.get(trial_number, [])
+
             data = {
                 'Sub Num': s['Number'],
                 'Months': '{:0.1f}'.format(age_months(s['Birthday'], s['Date of Test'])),
-                'Sex': s['Sex'],
+                'Sex': s.get_sex_display(),
                 'Order': s.trial_order.name(),
-                'Tr Num': trial,
+                'Tr Num': trial_number,
                 'Prescreen Notes': s['Notes'],
-                'L-image': trial_info.get('Left Image', ''),
-                'C-image': trial_info.get('Center Image', ''),
-                'R-image': trial_info.get('Right Image', ''),
-                'Target Side': trial_info.get('Target Side', ''),
-                'Condition': trial_info.get('Condition', ''),
-                'CritOnset': trial_info.get('Critical Onset', 0)
+                'L-image': trial_info['Left Image'],
+                'C-image': trial_info['Center Image'],
+                'R-image': trial_info['Right Image'],
+                'Target Side': trial_info['Target Side'],
+                'Condition': trial_info['Condition'],
+                'CritOnset': trial_info['Critical Onset']
             }
 
             event_start = 0
@@ -175,12 +176,12 @@ def export_wide(filename, s: Subject):
                 try:
                     event_end = events[e + 1].frame - events[0].frame
                 except IndexError:
-                    event_end = trial_frames
+                    event_end = trial_frames.get(trial_number, 0)
 
                 accuracy = compute_accuracy(data['Target Side'], events[e].response)
 
                 for frame in range(event_start, event_end):
-                    frame_ms = frame2ms(frame) - critical_onset
+                    frame_ms = frame2ms(frame) - critical_onset_rounded
                     data['F{:.0f}'.format(frame_ms)] = accuracy
                 event_start = event_end
             writer.writerow(data)
