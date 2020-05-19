@@ -325,13 +325,13 @@ class MainWindow(QtWidgets.QMainWindow):
         """Create the menu bar and global fixed actions"""
 
         # Create open action
-        open_action = QAction(QtGui.QIcon('open.png'), '&Open Video', self)
+        open_action = QAction(QtGui.QIcon('open.png'), '&Load Video', self)
         open_action.setShortcut('Ctrl+O')
-        open_action.setStatusTip('Open video')
+        open_action.setStatusTip('Load video')
         open_action.triggered.connect(self.open_video)
 
         # Create open datafile action
-        data_open_action = QAction(QtGui.QIcon('open.png'), 'Open &Datafile', self)
+        data_open_action = QAction(QtGui.QIcon('open.png'), '&Open Datafile', self)
         data_open_action.setShortcut('Ctrl+D')
         data_open_action.setStatusTip('Open datafile')
         data_open_action.triggered.connect(self.open_datafile)
@@ -605,7 +605,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return 0
 
     def open_video(self):
-        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Movie") #, QtCore.QDir.homePath())
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Load Video") #, QtCore.QDir.homePath())
 
         if filename != '':
             self.video_source = filename
