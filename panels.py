@@ -163,6 +163,7 @@ class LogTable(QTableWidget):
         self.verticalHeader().setVisible(False)
         self.setSelectionBehavior(QTableWidget.SelectRows)
         self.setFocusPolicy(Qt.NoFocus)
+        self.setVerticalScrollMode(self.ScrollPerPixel)
 
         self.data = []  # list of iterables
 

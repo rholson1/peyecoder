@@ -372,6 +372,19 @@ class Events:
     def __getattr__(self, item):
         return getattr(self.events, item)
 
+    def absolute_index(self, item):
+        # find index of event matching on all fields
+        for i, event in enumerate(self.events):
+            if item.trial == event.trial and \
+                    item._status == event._status and \
+                    item.response == event.response and \
+                    item.frame == event.frame:
+                return i
+        return None
+
+    def __len__(self):
+        return len(self.events)
+
     def trials(self):
         """ Compute trials from the list of events"""
         return {k: list(g) for k, g in groupby(self.events, attrgetter('trial'))}
