@@ -73,18 +73,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_dialog = None
         self.code_comparison_dialog = None
 
-        # open video source
-        self.video_source = ''  # r'm:\work\iCoder\sample_data\CueCue_108.mov'
-        self.vid = None  # BufferedVideoReader(self.video_source)
-        self.audio = VideoAudioPlayer()
-        self.audio_muted = False
+        self.subject = Subject()
 
         # Timecode object used to translate from frames to SMTP timecode
         # Initialize with default framerate; will be updated when a video is loaded
         self.timecode = timecode.Timecode('29.97')
         self.timecode.drop_frame = False
-
-        self.subject = Subject()
 
         # Create layouts to place inside widget
         control_layout = self.build_playback_widgets()
@@ -132,7 +126,41 @@ class MainWindow(QtWidgets.QMainWindow):
         self.installEventFilter(eventfilter)
 
         self.build_menu()
+
+        self.reset_state()
+
+    def reset_state(self):
+        """Initialize state or reset to initial state"""
+        self.subject = Subject()
+
+        # reset video source
+        self.video_source = ''
+        self.vid = None
+        if hasattr(self, 'audio'):
+            del self.audio
+        self.audio = VideoAudioPlayer()
+        self.audio_muted = False
+        self.image_frame.clear()
+
+        # reset dialogs
+        if self.occluder_dialog:
+            self.occluder_dialog.close()
+        if self.subject_dialog:
+            self.subject_dialog.close()
+        if self.settings_dialog:
+            self.settings_dialog.close()
+        if self.code_comparison_dialog:
+            self.code_comparison_dialog.close()
+        self.occluder_dialog = None
+        self.subject_dialog = None
+        self.settings_dialog = None
+        self.code_comparison_dialog = None
+
+        self.update_log()
+        self.reset_info_panel()
+
         self.open_subject_dialog()
+
 
     def build_playback_widgets(self):
         """ Create play button and position slider controls"""
@@ -323,27 +351,33 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def build_menu(self):
         """Create the menu bar and global fixed actions"""
+        # Create new action
+        new_action = QAction('&New', self)
+        new_action.setShortcut('Ctrl+N')
+        new_action.setStatusTip('Reset to initial state')
+        new_action.triggered.connect(self.reset_state)
 
         # Create open action
-        open_action = QAction(QtGui.QIcon('open.png'), '&Load Video', self)
-        open_action.setShortcut('Ctrl+O')
-        open_action.setStatusTip('Load video')
+        open_action = QAction(QtGui.QIcon('open.png'), '&Load movie', self)
+        open_action.setShortcut('Ctrl+L')
+        open_action.setStatusTip('Load movie')
         open_action.triggered.connect(self.open_video)
 
         # Create open datafile action
-        data_open_action = QAction(QtGui.QIcon('open.png'), '&Open Datafile', self)
-        data_open_action.setShortcut('Ctrl+D')
+        data_open_action = QAction(QtGui.QIcon('open.png'), '&Open file', self)
+        data_open_action.setShortcut('Ctrl+O')
         data_open_action.setStatusTip('Open datafile')
         data_open_action.triggered.connect(self.open_datafile)
 
         # Create save action
-        data_save_action = QAction(QtGui.QIcon('save.png'), '&Save Datafile', self)
+        data_save_action = QAction(QtGui.QIcon('save.png'), '&Save as...', self)
         data_save_action.setShortcut('Ctrl+S')
         data_save_action.setStatusTip('Save datafile')
         data_save_action.triggered.connect(self.save_datafile)
 
-        reliability_action = QAction('&Reliability', self)
-        reliability_action.setStatusTip('Open reliability file')
+        reliability_action = QAction('Compare against', self)
+        reliability_action.setShortcut('Ctrl+T')
+        reliability_action.setStatusTip('Compare coding against another file')
         reliability_action.triggered.connect(self.open_reliability_datafile)
 
         export_action = QAction('E&xport CSV', self)
@@ -383,6 +417,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Create menu bar and add action
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('&File')
+        file_menu.addAction(new_action)
         file_menu.addAction(open_action)
         file_menu.addAction(data_open_action)
         file_menu.addAction(data_save_action)
@@ -653,6 +688,14 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 self.code_comparison_dialog = CodeComparisonDialog(self, filename)
                 self.code_comparison_dialog.show()
+
+    def reset_info_panel(self):
+        # Reset the info panel widgets
+        self.subject_number_box.setText('')
+        self.order_label_box.setText('')
+        self.unused_box.setText('')
+        self.prescreened_box.setText('')
+        self.step_label.setText('Step: {}'.format(self.subject.settings['Step']))
 
     def update_info_panel(self):
         # Refresh the info panel widgets
