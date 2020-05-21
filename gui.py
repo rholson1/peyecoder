@@ -330,11 +330,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_log()
         # Scroll to the newly-added item
         row = self.subject.events.absolute_index(event)
-        if row == len(self.subject.events) - 1:
-            # scrolling to the item doesn't work very well for the last item, so scrollToBottom instead
-            self.logtable.scrollToBottom()
-        else:
-            self.logtable.scrollToItem(self.logtable.item(row, 0), self.logtable.PositionAtCenter)
+        self.logtable.scroll_to_row(row)
 
     def delete_data_rows(self, rows):
         """Delete rows from events or reasons as appropriate """

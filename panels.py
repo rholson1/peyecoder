@@ -247,3 +247,10 @@ class LogTable(QTableWidget):
     def set_labels(self, labels):
         self.setColumnCount(len(labels))
         self.setHorizontalHeaderLabels(labels)
+
+    def scroll_to_row(self, row):
+        # scrolling to the item doesn't work very well for the last item, so scrollToBottom instead
+        if row == self.rowCount() - 1:
+            self.scrollToBottom()
+        else:
+            self.scrollToItem(self.item(row, 0), self.PositionAtCenter)
