@@ -514,3 +514,19 @@ class CodeComparisonDialog(QDialog):
         for c in range(4):
             self.logtable.item(row, c).setSelected(True)
 
+
+class ReportDialog(QDialog):
+    """Dialog to show a reliability report"""
+    def __init__(self, parent, text=None):
+        super().__init__(parent)
+        self.setWindowTitle('Reliability Report')
+        self.textedit = QPlainTextEdit()
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.textedit)
+        self.setLayout(layout)
+        if text:
+            self.set_text(text)
+
+    def set_text(self, text):
+        self.textedit.setPlainText(text)

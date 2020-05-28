@@ -18,8 +18,9 @@ from audio_player import VideoAudioPlayer
 from panels import Prescreen, Code, LogTable
 from models import Offsets, Occluders, Reasons, Events, TrialOrder, Subject
 from file_utils import load_datafile, save_datafile, stringify_keys, intify_keys
-from dialogs import SubjectDialog, TimecodeDialog, OccluderDialog, SettingsDialog, CodeComparisonDialog
+from dialogs import SubjectDialog, TimecodeDialog, OccluderDialog, SettingsDialog, CodeComparisonDialog, ReportDialog
 from export import export
+from reliability import reliability_report
 
 STATE_PLAYING = 1
 STATE_PAUSED = 2
@@ -72,6 +73,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subject_dialog = None
         self.settings_dialog = None
         self.code_comparison_dialog = None
+        self.report_dialog = None
 
         self.subject = Subject()
 
@@ -684,6 +686,14 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 self.code_comparison_dialog = CodeComparisonDialog(self, filename)
                 self.code_comparison_dialog.show()
+
+            report = reliability_report(self.subject, self.code_comparison_dialog.subject, self.timecode)
+            text = '\n'.join(report)
+            if self.report_dialog:
+                self.report_dialog.set_text(text)
+            else:
+                self.report_dialog = ReportDialog(self, text)
+                self.report_dialog.show()
 
     def reset_info_panel(self):
         # Reset the info panel widgets

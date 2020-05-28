@@ -238,10 +238,14 @@ class Event:
         return [self.trial, self.status, self.response, self.frame]
 
     def __eq__(self, other):
-        return self.frame == other.frame
+        return self.frame == other.frame and self._status == other._status
 
     def __lt__(self, other):
-        return self.frame < other.frame
+        if self.frame == other.frame:
+            # If two events have the same timestamp, status 'on' should sort before 'off'
+            return self._status > other._status
+        else:
+            return self.frame < other.frame
 
     def __str__(self):
         return 'Trial: {}, Status: {}, Response: {}, Frame: {}'.format(
@@ -397,6 +401,16 @@ class Events:
     def trials(self):
         """ Compute trials from the list of events"""
         return {k: list(g) for k, g in groupby(self.events, attrgetter('trial'))}
+
+    def frames(self):
+        """ Compute frames with responses from events
+        Include all frames from start of first trial to end of last trial.
+        """
+        responses = {}
+        for i in range(len(self.events) - 1):
+            for f in range(self.events[i].frame, self.events[i + 1].frame):
+                responses[f] = self.events[i].response
+        return responses
 
 
 class Offsets(SortedDict):
