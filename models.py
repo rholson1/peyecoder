@@ -333,7 +333,7 @@ class Events:
 
             events.append(
                 Event(trial=e['Trial'],
-                      status=e['Trial Status'],
+                      status=e['Trial Status'] in ('on', True),
                       response=e['Type'],
                       frame=e['Frame'])
             )
