@@ -6,7 +6,7 @@ Running
 To run peyecoder from the project directory:
 
 ```
-python pyecoder.py
+python peyecoder.py
 ```
 
 
