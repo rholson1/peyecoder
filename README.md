@@ -1,6 +1,14 @@
 # peyecoder
 Software for coding children's eye movements
 
+Running
+--
+To run peyecoder from the project directory:
+
+```
+python pyecoder.py
+```
+
 
 Dependencies
 --

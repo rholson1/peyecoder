@@ -1,5 +1,5 @@
 
-from models import Subject
+from peyecoder.models import Subject
 
 SHIFT_AGREEMENT_THRESHOLD = 1
 

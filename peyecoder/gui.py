@@ -13,14 +13,14 @@ import timecode
 import PIL.Image, PIL.ImageTk
 import os
 
-from video_reader import BufferedVideoReader
-from audio_player import VideoAudioPlayer
-from panels import Prescreen, Code, LogTable
-from models import Offsets, Occluders, Reasons, Events, TrialOrder, Subject
-from file_utils import load_datafile, save_datafile, stringify_keys, intify_keys
-from dialogs import SubjectDialog, TimecodeDialog, OccluderDialog, SettingsDialog, CodeComparisonDialog, ReportDialog
-from export import export
-from reliability import reliability_report
+from peyecoder.video_reader import BufferedVideoReader
+from peyecoder.audio_player import VideoAudioPlayer
+from peyecoder.panels import Prescreen, Code, LogTable
+from peyecoder.models import Subject
+from peyecoder.file_utils import load_datafile, save_datafile
+from peyecoder.dialogs import SubjectDialog, TimecodeDialog, OccluderDialog, SettingsDialog, CodeComparisonDialog, ReportDialog
+from peyecoder.export import export
+from peyecoder.reliability import reliability_report
 
 STATE_PLAYING = 1
 STATE_PAUSED = 2

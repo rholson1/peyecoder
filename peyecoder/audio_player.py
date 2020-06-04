@@ -1,8 +1,7 @@
 import wave
 import pyaudio
-import time
 import os
-from av_utils import extract_sound
+from peyecoder.av_utils import extract_sound
 
 
 def noop(*args, **kwargs):

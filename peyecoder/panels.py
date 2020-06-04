@@ -5,7 +5,7 @@ from PySide2.QtWidgets import QWidget, QLabel, QPushButton, QSpinBox, QComboBox,
 
 from PySide2.QtGui import Qt
 
-from models import Reason, Event
+from peyecoder.models import Reason, Event
 
 
 class Prescreen(QWidget):

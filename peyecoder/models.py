@@ -11,7 +11,7 @@ from operator import attrgetter
 from timecode import Timecode
 import csv
 
-from file_utils import stringify_keys, intify_keys
+from peyecoder.file_utils import stringify_keys, intify_keys
 
 
 class Subject:

@@ -1,5 +1,5 @@
 
-from models import Subject
+from peyecoder.models import Subject
 import csv
 from dateutil import parser
 from math import ceil

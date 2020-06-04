@@ -1,4 +1,4 @@
-from PySide2 import QtCore, QtWidgets, QtGui
+from PySide2 import QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, \
     QHBoxLayout, QVBoxLayout, QGridLayout, QDialog, \
     QRadioButton, QButtonGroup, QDialogButtonBox, QCheckBox, QPlainTextEdit, QFrame, \
@@ -14,9 +14,9 @@ from urllib.request import url2pathname
 import timecode
 import os
 
-from models import Occluders, Subject
-from panels import LogTable
-from file_utils import load_datafile
+from peyecoder.models import Occluders, Subject
+from peyecoder.panels import LogTable
+from peyecoder.file_utils import load_datafile
 
 
 class FileDropTarget(QLabel):
