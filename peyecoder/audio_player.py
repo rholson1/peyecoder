@@ -13,23 +13,21 @@ class VideoAudioPlayer:
     """
     _player_methods = ['seek', 'play', 'stop']
 
-    def __init__(self, video_source=None):
+    def __init__(self):
 
         self.video_filename = ''
         self.audio_filename = ''
         self.audio_player = None
-        if video_source:
-            self.set_video_source(video_source)
 
     # Release the video source when the object is destroyed
     def __del__(self):
         self.cleanup()
 
-    def set_video_source(self, video_source):
+    def set_video_source(self, video_source, frame_rate):
         if self.audio_player:
             self.cleanup()
         self.audio_filename = extract_sound(video_source)
-        self.audio_player = AudioPlayer(self.audio_filename)
+        self.audio_player = AudioPlayer(self.audio_filename, frame_rate)
 
     def cleanup(self):
         """Cleanup - delete temporary files and cleanup audio stream"""

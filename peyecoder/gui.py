@@ -645,7 +645,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.initialize_video()
             try:
-                self.audio.set_video_source(self.video_source)
+                self.audio.set_video_source(self.video_source, self.vid.frame_rate)
             except FileNotFoundError as e:
                 # probably missing ffmpeg
                 self.message_box.setText(e.strerror)
