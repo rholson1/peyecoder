@@ -61,7 +61,6 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
 
         self.setFocusPolicy(Qt.ClickFocus)
-        self.setWindowTitle('peyecoder')
 
         self.frame_delay = 0  # ms delay between frames when playing video (or maybe use framerate)
         self.state = STATE_PAUSED
@@ -134,7 +133,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def reset_state(self):
         """Initialize state or reset to initial state"""
         self.subject = Subject()
-
+        self.filename = ''
+        self.setWindowTitle('peyecoder')
         # reset video source
         self.video_source = ''
         self.vid = None
@@ -162,7 +162,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reset_info_panel()
 
         self.open_subject_dialog()
-
 
     def build_playback_widgets(self):
         """ Create play button and position slider controls"""
@@ -368,12 +367,16 @@ class MainWindow(QtWidgets.QMainWindow):
         data_open_action.triggered.connect(self.open_datafile)
 
         # Create save action
-        data_save_action = QAction(QtGui.QIcon('save.png'), '&Save as...', self)
+        data_save_as_action = QAction(QtGui.QIcon('save.png'), 'Save &as...', self)
+        data_save_as_action.setStatusTip('Save datafile with new filename')
+        data_save_as_action.triggered.connect(self.save_as_datafile)
+
+        data_save_action = QAction(QtGui.QIcon('save.png'), '&Save', self)
         data_save_action.setShortcut('Ctrl+S')
         data_save_action.setStatusTip('Save datafile')
         data_save_action.triggered.connect(self.save_datafile)
 
-        reliability_action = QAction('Compare against', self)
+        reliability_action = QAction('&Compare against', self)
         reliability_action.setShortcut('Ctrl+T')
         reliability_action.setStatusTip('Compare coding against another file')
         reliability_action.triggered.connect(self.open_reliability_datafile)
@@ -382,7 +385,7 @@ class MainWindow(QtWidgets.QMainWindow):
         export_action.setStatusTip('Export CSV')
         export_action.triggered.connect(self.export_csv)
 
-        exportw_action = QAction('Export CSV (Wide)', self)
+        exportw_action = QAction('Export CSV (&Wide)', self)
         exportw_action.setStatusTip('Export CSV (Wide format)')
         exportw_action.triggered.connect(self.exportw_csv)
 
@@ -419,6 +422,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(open_action)
         file_menu.addAction(data_open_action)
         file_menu.addAction(data_save_action)
+        file_menu.addAction(data_save_as_action)
         file_menu.addSeparator()
         file_menu.addAction(export_action)
         file_menu.addAction(exportw_action)
@@ -660,12 +664,20 @@ class MainWindow(QtWidgets.QMainWindow):
             self.update_info_panel()
             if self.subject_dialog:
                 self.subject_dialog.update_from_dict(self.subject.to_dict())
+            self.filename = filename
             self.setWindowTitle('peyecoder - {}'.format(os.path.basename(filename)))
 
     def save_datafile(self):
+        if self.filename:
+            save_datafile(self.filename, self.subject.to_plist())
+        else:
+            self.save_as_datafile()
+
+    def save_as_datafile(self):
         filename = get_save_filename(self, "Save Data File", filter="Data Files (*.vcx)", default_suffix='vcx')
         if filename != '':
             save_datafile(filename, self.subject.to_plist())
+            self.filename = filename
             self.setWindowTitle('peyecoder - {}'.format(os.path.basename(filename)))
 
     def export_csv(self):
