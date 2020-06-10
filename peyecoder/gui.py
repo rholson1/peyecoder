@@ -495,6 +495,10 @@ class MainWindow(QtWidgets.QMainWindow):
         elif e.key() in self.subject.settings.get('Response Keys', {}):
             self.code_tab.response_box.setCurrentText(self.subject.settings['Response Keys'][e.key()])
 
+        # Clear the log table when pressing a key that results in changing the position in the video
+        if e.key() in (Qt.Key_Right, Qt.Key_Left, Qt.Key_BracketLeft, Qt.Key_BracketRight, Qt.Key_Space):
+            self.logtable.clearSelection()
+
     def change_selected_trials(self, delta):
         rows = self.logtable.selected_rows()
         if delta > 0:
