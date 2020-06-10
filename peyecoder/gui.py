@@ -205,7 +205,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.step_label = QLabel('Step: {}'.format(self.subject.settings['Step']))
 
-
         # Timecode display
         self.timecode_label = QLabel('00:00:00;00')
         self.timecode_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)

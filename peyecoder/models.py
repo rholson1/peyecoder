@@ -451,6 +451,19 @@ class Occluders:
         return self.occluders.__iter__()
 
 
+class Trial(dict):
+    """Subclass of dict used to represent a row of the TrialOrder table"""
+    def inverted_target(self):
+        """Swap left and right target side to account for difference between participant and camera perspective"""
+        try:
+            if self['Target Side'] in ('R', 'L'):
+                return {'R': 'L', 'L': 'R'}[self['Target Side']]
+            else:
+                return self['Target Side']
+        except KeyError:
+            return 'No target to invert'
+
+
 class TrialOrder:
     def __init__(self, data=None):
         self.unused = []
@@ -483,7 +496,7 @@ class TrialOrder:
 
             for row in reader:
                 trial_number = int(row.get('Trial Number', 0) or row.get('trial number', 0))
-                data.append({
+                data.append(Trial({
                     'Name': row.get('Name', ''),
                     'Trial Number': trial_number,
                     'Sound Stimulus': row.get('Sound Stimulus', ''),
@@ -495,7 +508,7 @@ class TrialOrder:
                     'Used': row.get('Used', ''),
                     'Trial End': int(row.get('Trial End', 0) or row.get('TrEnd', 0)),
                     'Critical Onset': int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
-                })
+                }))
 
         self.data = data
         self.calc_unused()
@@ -505,4 +518,4 @@ class TrialOrder:
 
     @staticmethod
     def from_plist(data):
-        return TrialOrder(data)
+        return TrialOrder([Trial(d) for d in data])

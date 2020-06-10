@@ -95,7 +95,7 @@ def export_long(filename, s: Subject):
                 'Left Image': trial_info.get('Left Image', ''),
                 'Center Image': trial_info.get('Center Image', ''),
                 'Right Image': trial_info.get('Right Image', ''),
-                'Target Side': trial_info.get('Target Side', ''),
+                'Target Side': trial_info.inverted_target(),  #trial_info.get('Target Side', ''),
                 'Condition': trial_info.get('Condition', '')
             })
 
@@ -169,7 +169,7 @@ def export_wide(filename, s: Subject):
                 'L-image': trial_info['Left Image'],
                 'C-image': trial_info['Center Image'],
                 'R-image': trial_info['Right Image'],
-                'Target Side': trial_info['Target Side'],
+                'Target Side': trial_info.inverted_target(),  # trial_info['Target Side'],
                 'Condition': trial_info['Condition'],
                 'CritOnset': trial_info['Critical Onset']
             }
