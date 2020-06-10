@@ -546,16 +546,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.code_tab.record_button.setEnabled(True)
         self.prescreen_tab.record_button.setEnabled(True)
 
-    # def update_step(self):
-    #     # Update self.step based on new value of step text box
-    #     text = self.step_box.text()
-    #     try:
-    #         new_step = int(text)
-    #     except ValueError:
-    #         new_step = 1
-    #     self.step_box.setText(str(new_step))
-    #     self.settings['Step'] = new_step
-
     def change_frame(self, offset):
         # Change position in video, moving OFFSET frames relative to current position
         if not self.vid:
