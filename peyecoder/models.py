@@ -66,7 +66,7 @@ class Subject:
         data['Pre-Screen Information'] = self.reasons.to_plist()
         data['Responses'] = self.events.to_plist()
         data['Trial Order'] = self.trial_order.to_plist()
-        data['Settings'] = self.settings
+        data['Settings'] = self.settings.copy()
         data['Settings']['Response Keys'] = stringify_keys(self.settings['Response Keys'])
         data.update(self.to_dict())
 
