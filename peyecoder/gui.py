@@ -701,7 +701,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.code_comparison_dialog.load_data(filename)
             else:
                 self.code_comparison_dialog = CodeComparisonDialog(self, filename)
-                self.code_comparison_dialog.show()
+            self.code_comparison_dialog.show()
 
             report = reliability_report(self.subject, self.code_comparison_dialog.subject, self.timecode)
             text = '\n'.join(report)
@@ -709,7 +709,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.report_dialog.set_text(text)
             else:
                 self.report_dialog = ReportDialog(self, text)
-                self.report_dialog.show()
+            self.report_dialog.show()
 
     def reset_info_panel(self):
         # Reset the info panel widgets
