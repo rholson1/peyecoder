@@ -1,6 +1,6 @@
 from PySide2 import QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, \
-    QHBoxLayout, QVBoxLayout, QGridLayout, QDialog, \
+    QHBoxLayout, QVBoxLayout, QGridLayout, QDialog, QFileDialog, \
     QRadioButton, QButtonGroup, QDialogButtonBox, QCheckBox, QPlainTextEdit, QFrame, \
     QTableWidget, QHeaderView, QTableWidgetItem, QSizePolicy
 
@@ -17,6 +17,21 @@ import os
 from peyecoder.models import Occluders, Subject
 from peyecoder.panels import LogTable
 from peyecoder.file_utils import load_datafile
+from peyecoder.export import export
+
+
+def get_save_filename(parent, caption, filter, default_suffix=''):
+    """ Use a custom save dialog instead of the convenience function to support default suffix"""
+    dialog = QFileDialog(parent, caption=caption, filter=filter)
+    dialog.setAcceptMode(QFileDialog.AcceptSave)
+    dialog.setFileMode(QFileDialog.AnyFile)
+    if default_suffix:
+        dialog.setDefaultSuffix(default_suffix)
+    if dialog.exec_():
+        filenames = dialog.selectedFiles()
+        if filenames:
+            return filenames[0]
+    return ''
 
 
 class FileDropTarget(QLabel):
@@ -530,3 +545,43 @@ class ReportDialog(QDialog):
 
     def set_text(self, text):
         self.textedit.setPlainText(text)
+
+
+class ExportDialog(QDialog):
+    """Dialog for creating CSV output"""
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowTitle('Export CSV')
+
+        self.format_label = QLabel('Export Format:')
+        self.wide_radio = QRadioButton('Wide (iCoder) Format')
+        self.long_radio = QRadioButton('Long Format')
+        self.format_radiogroup = QButtonGroup()
+        self.format_radiogroup.addButton(self.wide_radio, id=1)
+        self.format_radiogroup.addButton(self.long_radio, id=2)
+
+        self.wide_radio.setChecked(True)  # default wide
+        self.invert_checkbox = QCheckBox('Exchange R and L in trial order')
+
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
+        self.button_box.accepted.connect(self.export_csv)
+        self.button_box.rejected.connect(self.reject)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.format_label)
+        layout.addWidget(self.wide_radio)
+        layout.addWidget(self.long_radio)
+        layout.addWidget(self.invert_checkbox)
+        layout.addWidget(self.button_box)
+
+        self.setLayout(layout)
+
+    def export_csv(self):
+        filename = get_save_filename(self, "Save CSV File", filter="CSV Files (*.csv)", default_suffix='csv')
+        if filename != '':
+            export_format = {1: 'wide', 2: 'long'}[self.format_radiogroup.checkedId()]
+            export(filename, self.parent().subject, format=export_format, invert_rl=self.invert_checkbox.isChecked())
+            self.accept()
+        else:
+            self.reject()
+

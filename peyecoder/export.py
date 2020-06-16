@@ -50,22 +50,24 @@ def compute_accuracy(target, response):
     return accuracy
 
 
-def export(filename, s: Subject, format='long'):
+def export(filename, s: Subject, format='long', invert_rl=False):
     """Export subject data to a .csv file
     :param s: subject object
     :param filename: full path to the destination file
     :param format: 'wide' or 'long' format for the export file
+    :param invert_rl: if True, invert target location in trial order
     """
     if format == 'long':
-        export_long(filename, s)
+        export_long(filename, s, invert_rl)
     elif format == 'wide':
-        export_wide(filename, s)
+        export_wide(filename, s, invert_rl)
 
 
-def export_long(filename, s: Subject):
+def export_long(filename, s: Subject, invert_rl):
     """Export subject data to a .csv file
     :param s: subject object
     :param filename: full path to the destination file
+    :param invert_rl: if True, invert target location in trial order
     """
     fields = ('Sub Num', 'Months', 'Sex', 'Trial Order', 'Trial Number', 'Prescreen Notes',
               'Left Image', 'Center Image', 'Right Image', 'Target Side', 'Condition',
@@ -95,7 +97,7 @@ def export_long(filename, s: Subject):
                 'Left Image': trial_info.get('Left Image', ''),
                 'Center Image': trial_info.get('Center Image', ''),
                 'Right Image': trial_info.get('Right Image', ''),
-                'Target Side': trial_info.inverted_target(),  #trial_info.get('Target Side', ''),
+                'Target Side': trial_info.inverted_target() if invert_rl else trial_info.get('Target Side', ''),
                 'Condition': trial_info.get('Condition', '')
             })
 
@@ -120,10 +122,11 @@ def export_long(filename, s: Subject):
                 event_start = event_end
 
 
-def export_wide(filename, s: Subject):
+def export_wide(filename, s: Subject, invert_rl):
     """Export subject data to a .csv file in "wide" format (the old iCoder style)
     :param s: subject object
     :param filename: full path to the destination file
+    :param invert_rl: If true, invert target location in trial order
     """
     columns = ['Sub Num', 'Months', 'Sex', 'Order', 'Tr Num', 'Prescreen Notes',
                'L-image', 'C-image', 'R-image', 'Target Side', 'Target Image', 'Condition',
@@ -138,14 +141,17 @@ def export_wide(filename, s: Subject):
 
     # critical onset frames for each trial in trial order (trials may be repeated)
     trial_cof = [(trial['Trial Number'], ms2frames(trial['Critical Onset'])) for trial in s.trial_order.data]
-    max_pre_onset = max([cof for t, cof in trial_cof])
-    # number of frames coded for each trial
-    trial_frames = {t: events[-1].frame - events[0].frame for t, events in s.events.trials().items()}
-    # frames after critical onset coded for each trial
-    post_onset_frames = [trial_frames.get(t, 0) - cof for t, cof in trial_cof]
-    max_post_onset = max(post_onset_frames)
+    if trial_cof:
+        max_pre_onset = max([cof for t, cof in trial_cof])
+        # number of frames coded for each trial
+        trial_frames = {t: events[-1].frame - events[0].frame for t, events in s.events.trials().items()}
+        # frames after critical onset coded for each trial
+        post_onset_frames = [trial_frames.get(t, 0) - cof for t, cof in trial_cof]
+        max_post_onset = max(post_onset_frames)
 
-    frame_columns = ['F{:.0f}'.format(frame2ms(f - max_pre_onset)) for f in range(max_pre_onset + max_post_onset)]
+        frame_columns = ['F{:.0f}'.format(frame2ms(f - max_pre_onset)) for f in range(max_pre_onset + max_post_onset)]
+    else:
+        frame_columns = []
 
     fields = columns + frame_columns
 
@@ -169,7 +175,7 @@ def export_wide(filename, s: Subject):
                 'L-image': trial_info['Left Image'],
                 'C-image': trial_info['Center Image'],
                 'R-image': trial_info['Right Image'],
-                'Target Side': trial_info.inverted_target(),  # trial_info['Target Side'],
+                'Target Side': trial_info.inverted_target() if invert_rl else trial_info['Target Side'],
                 'Condition': trial_info['Condition'],
                 'CritOnset': trial_info['Critical Onset']
             }
