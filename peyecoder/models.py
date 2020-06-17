@@ -428,6 +428,8 @@ class Events:
         for i in range(len(self.events) - 1):
             for f in range(self.events[i].frame, self.events[i + 1].frame):
                 responses[f] = self.events[i].response
+        # include the last frame
+        responses[self.events[-1].frame] = self.events[-1].response
         return responses
 
 
