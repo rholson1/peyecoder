@@ -5,7 +5,7 @@ from PySide2.QtCore import QRect, Qt
 from sortedcontainers import SortedDict, SortedList
 from functools import total_ordering
 from collections import Counter
-from itertools import groupby
+from itertools import groupby, accumulate
 from operator import attrgetter
 
 from timecode import Timecode
@@ -365,7 +365,7 @@ class Events:
             msg.append('Trial numbers are not increasing with increasing timestamp')
 
         # 4. Check for invalid sequences within trials.
-        # must not have 2 consecutive events with a response in ('left', 'right') within a trial
+        # a. must not have 2 consecutive events with a response in ('left', 'right') within a trial
         error_rows = []
         for i in range(1, len(self.events)):
             if self.events[i-1].trial == self.events[i].trial and \
@@ -376,6 +376,24 @@ class Events:
         if error_rows:
             all_error_rows += error_rows
             msg.append('Cannot have consecutive "right" and/or "left" events in a trial')
+
+        # b. must not have 2 consecutive events with the same response
+        error_rows = []
+        for i in range(1, len(self.events)):
+            if self.events[i-1].trial == self.events[i].trial and \
+                    self.events[i-1].status == self.events[i].status and \
+                    self.events[i-1].response == self.events[i].response:
+                error_rows.append(i)
+        if error_rows:
+            all_error_rows += error_rows
+            msg.append('Cannot have consecutive events with the same response')
+
+        # 5. last event in a trial should have status 'off'
+        last_rows = accumulate([len(events) for t, events in self.trials().items()])
+        error_rows = [r - 1 for r in last_rows if self.events[r-1].status == 'on']
+        if error_rows:
+            all_error_rows += error_rows
+            msg.append('The last event in a trial should have status "off"')
 
         return all_error_rows, msg
 
