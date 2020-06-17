@@ -43,6 +43,23 @@ def render_timecode(timecode, offsets, frame):
     return str(timecode)
 
 
+def timing_error(timecode, s1, s2, trial, frame_1, frame_2):
+    """Generate the error message for a timing error"""
+    difference = frame_1 - frame_2
+    timecode_1 = render_timecode(timecode, s1.timecode_offsets, frame_1)
+    timecode_2 = render_timecode(timecode, s2.timecode_offsets, frame_2)
+    suffix = 's' if abs(difference) > 1 else ''
+    word = 'later' if difference > 0 else 'earlier'
+    diff_str = '{} frame{} {}'.format(abs(difference), suffix, word)
+    return "Trial {}: Your response at {} is {} than the other subject's response at {}.".format(trial, timecode_1, diff_str, timecode_2)
+
+def response_error(timecode, s1, s2, trial, frame_1, frame_2):
+    """Generate the error message for a response error"""
+    timecode_1 = render_timecode(timecode, s1.timecode_offsets, frame_1)
+    timecode_2 = render_timecode(timecode, s2.timecode_offsets, frame_2)
+    return "Trial {}: Your response at {} is not similar to the other subject's response at {}.".format(trial, timecode_1, timecode_2)
+
+
 def reliability_report(s1: Subject, s2: Subject, timecode):
     """Create a reliability report
     :param s1: Subject object containing "your" coding
@@ -85,29 +102,40 @@ def reliability_report(s1: Subject, s2: Subject, timecode):
         if len(t1) == len(t2):
             comparable += 1
             # Trials are comparable, so compute
-            for i in range(1, len(t1) - 1):
-                # do not compare first or last events in a trial
-                total_shifts += 1
 
-                if t1[i].response == t2[i].response and \
-                        abs(t1[i].frame - t2[i].frame) <= SHIFT_AGREEMENT_THRESHOLD:
-                    same_shifts += 1
+            for i in range(len(t1)):
+                if i in (0, len(t1) - 1):
+                    # This is a fixed event.  Do not compare for shift agreement, but still must be identical.
+                    # check for time stamp agreement: frame must be identical
+                    difference = t1[i].frame - t2[i].frame
+                    if difference:
+                        report.append(timing_error(timecode, s1, s2, t, t1[i].frame, t2[i].frame))
+                    # check for response agreement
+                    if normalize_response(t1[i].response) != normalize_response(t2[i].response):
+                        report.append(response_error(timecode, s1, s2, t, t1[i].frame, t2[i].frame))
                 else:
-                    timecode_1 = render_timecode(timecode, s1.timecode_offsets, t1[i].frame)
-                    timecode_2 = render_timecode(timecode, s2.timecode_offsets, t2[i].frame)
-                    report.append(("Trial {}: Your response at {} is not similar to the other "
-                                   "subject's response at {}.").format(t, timecode_1, timecode_2))
-            # Compare fixed events (trial start/stop) separately
-            for i in [0, len(t1) - 1]:
-                difference = t1[i].frame - t2[i].frame
-                if difference:
-                    timecode_1 = render_timecode(timecode, s1.timecode_offsets, t1[i].frame)
-                    timecode_2 = render_timecode(timecode, s2.timecode_offsets, t2[i].frame)
-                    suffix = 's' if abs(difference) > 1 else ''
-                    word = 'later' if difference > 0 else 'earlier'
-                    diff_str = '{} frame{} {}'.format(abs(difference), suffix, word)
-                    report.append(("Trial {}: Your response at {} is {} than the other subject's response "
-                                   "at {}.").format(t, timecode_1, diff_str, timecode_2 ))
+                    # not a fixed event.
+                    if normalize_response(t1[i].response) == normalize_response(t2[i].response):
+                        if t1[i].response == 'away':
+                            pass
+                        elif t1[i].response == 'off' and t1[i-1].response == 'away':
+                            pass
+                        else:
+                            total_shifts += 1
+                            if abs(t1[i].frame - t2[i].frame) <= SHIFT_AGREEMENT_THRESHOLD:
+                                same_shifts += 1
+                            else:
+                                report.append(response_error(timecode, s1, s2, t, t1[i].frame, t2[i].frame))
+                    else:
+                        total_shifts += 1
+                        # response error
+                        report.append(response_error(timecode, s1, s2, t, t1[i].frame, t2[i].frame))
+
+                        if abs(t1[i].frame - t2[i].frame) <= SHIFT_AGREEMENT_THRESHOLD:
+                            same_shifts += 1
+                        else:
+                            # timing error
+                            report.append(timing_error(timecode, s1, s2, t, t1[i].frame, t2[i].frame))
         else:
             report.append(('Trial {}: Your subject had {} responses, while the other subject had {} responses.'
                            ' Cannot compare this trial.').format(t, len(t1), len(t2)))
