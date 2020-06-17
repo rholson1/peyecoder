@@ -105,7 +105,7 @@ def reliability_report(s1: Subject, s2: Subject, timecode):
                     timecode_2 = render_timecode(timecode, s2.timecode_offsets, t2[i].frame)
                     suffix = 's' if abs(difference) > 1 else ''
                     word = 'later' if difference > 0 else 'earlier'
-                    diff_str = '{} frame{} {}'.format(difference, suffix, word)
+                    diff_str = '{} frame{} {}'.format(abs(difference), suffix, word)
                     report.append(("Trial {}: Your response at {} is {} than the other subject's response "
                                    "at {}.").format(t, timecode_1, diff_str, timecode_2 ))
         else:
