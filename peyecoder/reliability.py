@@ -125,7 +125,7 @@ def reliability_report(s1: Subject, s2: Subject, timecode):
                             if abs(t1[i].frame - t2[i].frame) <= SHIFT_AGREEMENT_THRESHOLD:
                                 same_shifts += 1
                             else:
-                                report.append(response_error(timecode, s1, s2, t, t1[i].frame, t2[i].frame))
+                                report.append(timing_error(timecode, s1, s2, t, t1[i].frame, t2[i].frame))
                     else:
                         total_shifts += 1
                         # response error
