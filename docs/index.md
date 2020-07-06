@@ -1,4 +1,4 @@
-#peyecoder
+# peyecoder
 
 ## About peyecoder
 Peyecoder is used for coding eye movements in looking-while-listening experiments.  It was designed
