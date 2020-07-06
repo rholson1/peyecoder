@@ -1,12 +1,12 @@
 # peyecoder
-Software for coding children's eye movements
+Software for coding eye movements in looking-while-listening tasks.
 
 Running
 --
 To run peyecoder from the project directory:
 
 ```
-python peyecoder.py
+python run-peyecoder.py
 ```
 
 
