@@ -20,6 +20,6 @@ Dependencies
 - **sortedcontainers**: data structures which maintain sort order
 - **python-dateutil**: date utilities
 
-
+additionally, **ffmpeg** should be installed and in the path. 
 
 
