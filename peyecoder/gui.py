@@ -10,7 +10,6 @@ from PySide2.QtGui import Qt
 from PySide2.QtCore import QObject, QEvent
 
 import timecode
-import PIL.Image, PIL.ImageTk
 import os
 
 from peyecoder.video_reader import BufferedVideoReader
@@ -562,9 +561,8 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         frame = self.vid.frame
-        image = PIL.Image.fromarray(frame)
-
-        image = QtGui.QImage(image.tobytes(), image.width, image.height, QtGui.QImage.Format_RGB888)
+        h, w, d = frame.shape
+        image = QtGui.QImage(frame.data, w, h, QtGui.QImage.Format_RGB888)
 
         # Draw occluders in image
         painter = QtGui.QPainter(image)
