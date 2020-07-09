@@ -13,8 +13,7 @@ python run-peyecoder.py
 Dependencies
 --
 - **PySide2**: Qt for Python
-- **opencv-python**: Computer vision library used to read videos   
-- **Pillow**: image manipulation library
+- **opencv-python-headless**: Computer vision library used to read videos   
 - **timecode**: library for SMTPE timecode computations
 - **PyAudio**: library used to playback audio
 - **sortedcontainers**: data structures which maintain sort order

@@ -756,11 +756,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show_frame()  # update (and resize) the display of the current frame
 
 
-if __name__ == "__main__":
-
+def run():
+    """Run peyecoder application"""
     app = QtWidgets.QApplication([])
     widget = MainWindow()
     widget.resize(800, 600)
     widget.show()
+    return app.exec_()
 
-    sys.exit(app.exec_())
