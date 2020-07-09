@@ -7,7 +7,7 @@ as a replacement for the now-outdated program iCoder developed at Stanford in th
 ## Installing peyecoder
 There are three ways to obtain peyecoder.
 - Download an executable version of the program attached to a [GitHub Release](https://github.com/rholson1/peyecoder/releases/).
-- Install from the Python Package Index `pip install peyecoder` [TBD]
+- Install from the Python Package Index `pip install peyecoder` 
 - Download the source code from GitHub
  
 For audio playback, peyecoder requires that [ffmpeg](https://ffmpeg.org/) be available in the system path. 
@@ -20,6 +20,9 @@ Steps to build an executable are:
 - install pyinstaller
 - create a single-file executable using the command:
 ```
-(venv) $ pyinstaller run-peyecoder.py --name peyecoder --onefile
+pyinstaller run-peyecoder.py --name peyecoder --onefile
 ```
-
+Additional parameters may be necessary on MacOS.
+```
+pyinstaller run-peyecoder.py --name peyecoder --onefile --windowed --hiddenimport pkg_resources.py2_warn
+```
