@@ -124,9 +124,6 @@ class SubjectDialog(QDialog):
         self.checked_box = QLineEdit()
         self.checked_box.editingFinished.connect(self.sync_fields)
 
-        self.offsets_label = QLabel('Resynchronization:')
-        self.offsets_box = QLabel('')
-
         self.notes_label = QLabel('Notes:')
         self.notes_box = QPlainTextEdit()
         self.notes_box.textChanged.connect(self.sync_fields)
@@ -167,9 +164,6 @@ class SubjectDialog(QDialog):
         r += 1
         grid.addWidget(self.checked_label, r, 0)
         grid.addWidget(self.checked_box, r, 1)
-        r += 1
-        grid.addWidget(self.offsets_label, r, 0)
-        grid.addWidget(self.offsets_box, r, 1)
         r += 1
         grid.addWidget(self.notes_label, r, 0)
         grid.addWidget(self.notes_box, r, 1)
