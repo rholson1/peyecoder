@@ -57,6 +57,9 @@ class Subject:
         return self._d
 
     def __getitem__(self, item):
+        if item == 'Order':
+            return self.trial_order.name()
+
         return self._d.__getitem__(item)
 
     def to_plist(self):

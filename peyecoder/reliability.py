@@ -1,5 +1,6 @@
 
 from peyecoder.models import Subject
+from dateutil import parser
 
 SHIFT_AGREEMENT_THRESHOLD = 1
 
@@ -152,12 +153,17 @@ def reliability_report(s1: Subject, s2: Subject, timecode):
     return report
 
 
+def str2date(datestr):
+    """Use dateutil.parser to convert a string to a date"""
+    return parser.parse(datestr, dayfirst=False).date()
+
+
 def subjects_are_comparable(s1: Subject, s2: Subject):
     """ Return true if subjects can be compared"""
-    fields = ('Number', 'Birthday', 'Date of Test', 'Order')
-    comparable = all([s1[f] == s2[f] for f in fields])
-
-    # must not have any illegal sequences
+    date_fields = ('Birthday', 'Date of Test')
+    fields = ('Number', 'Order')
+    comparable = all([str(s1[f]) == str(s2[f]) for f in fields]) and \
+        all([str2date(s1[f]) == str2date(s2[f]) for f in date_fields])
 
     return comparable
 
