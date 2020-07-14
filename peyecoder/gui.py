@@ -5,7 +5,7 @@ import math
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import QLabel, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
-    QTabWidget, QSplitter
+    QTabWidget, QSplitter, QScrollArea
 from PySide2.QtGui import Qt
 from PySide2.QtCore import QObject, QEvent
 
@@ -92,19 +92,30 @@ class MainWindow(QtWidgets.QMainWindow):
         splitter.setCollapsible(1, False)
         splitter.splitterMoved.connect(self.splitter_moved)
 
+        scrollable_message = QScrollArea()
+        scrollable_message.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        scrollable_message.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scrollable_message.setWidgetResizable(True)
+        scrollable_message.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        scrollable_message.setWidget(self.message_box)
+
         layout3 = QVBoxLayout()
         layout3.addWidget(splitter)
         layout3.addWidget(tab_widget)
         layout3.addLayout(info_grid)
-        layout3.addWidget(self.message_box)
 
-        # Create a widget for window contents
-        wid = QtWidgets.QWidget(self)
-        self.setCentralWidget(wid)
-        # wid.keyPressEvent = self.test_keypress_event
-        # wid.keyReleaseEvent = self.handle_keypress  # works for arrows, unlike keyPressEvent
+        container2 = QtWidgets.QWidget()
+        container2.setLayout(layout3)
 
-        wid.setLayout(layout3)
+        splitter2 = QSplitter()
+        splitter2.setOrientation(Qt.Vertical)
+        splitter2.addWidget(container2)
+        splitter2.addWidget(scrollable_message)
+        splitter2.setCollapsible(0, False)
+        splitter2.setCollapsible(1, False)
+        splitter2.splitterMoved.connect(self.splitter_moved)
+
+        self.setCentralWidget(splitter2)
 
         # Use event filter to cause mouse clicks away from the log table to
         # clear the selection (removes focus to fix key handling)
