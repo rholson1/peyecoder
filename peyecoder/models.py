@@ -487,6 +487,15 @@ class Trial(dict):
             return 'No target to invert'
 
 
+def to_int(s, default=0):
+    """Try to convert an input argument to a string, returning a default value if unsuccessful."""
+    try:
+        val = int(s)
+    except ValueError:
+        val = default
+    return val
+
+
 class TrialOrder:
     def __init__(self, data=None):
         self.unused = []
@@ -529,8 +538,8 @@ class TrialOrder:
                     'Target Side': row.get('Target Side', '') or row.get('target side', ''),
                     'Condition': row.get('Condition', '') or row.get('condition', ''),
                     'Used': row.get('Used', ''),
-                    'Trial End': int(row.get('Trial End', 0) or row.get('TrEnd', 0)),
-                    'Critical Onset': int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
+                    'Trial End': to_int(row.get('Trial End', 0) or row.get('TrEnd', 0)),
+                    'Critical Onset': to_int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
                 }))
 
         self.data = data
