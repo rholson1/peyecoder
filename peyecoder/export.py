@@ -5,14 +5,14 @@ from dateutil import parser
 from math import ceil
 
 
-def frame2ms(f):
-    """Convert a frame number to a time in ms, assuming 30 frames per second"""
-    return f * 100 / 3
+def frame2ms(f, frame_rate=30):
+    """Convert a frame number to a time in ms"""
+    return f * 1000 / frame_rate
 
 
-def ms2frames(ms):
+def ms2frames(ms, frame_rate=30):
     """Convert a time (in ms) to frames, rounding up"""
-    return ceil(ms * 3 / 100)
+    return ceil(ms * frame_rate / 1000)
 
 
 def age_months(date_of_birth, date_of_interest):
@@ -50,12 +50,13 @@ def compute_accuracy(target, response):
     return accuracy
 
 
-def export(filename, s: Subject, format='long', invert_rl=False):
+def export(filename, s: Subject, format='long', invert_rl=False, frame_rate=30):
     """Export subject data to a .csv file
     :param s: subject object
     :param filename: full path to the destination file
     :param format: 'wide' or 'long' format for the export file
     :param invert_rl: if True, invert target location in trial order
+    :param frame_rate: frame rate (frames per second)
     """
     if format == 'long':
         export_long(filename, s, invert_rl)
@@ -73,6 +74,8 @@ def export_long(filename, s: Subject, invert_rl):
               'Left Image', 'Center Image', 'Right Image', 'Target Side', 'Condition',
               'Time', 'Time Centered', 'Response', 'Accuracy')
 
+    frame_rate = round(s['Framerate'])
+
     with open(filename, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fields, dialect='excel')
         writer.writeheader()
@@ -89,7 +92,7 @@ def export_long(filename, s: Subject, invert_rl):
         trial_events = s.events.trials()
         for trial_info in s.trial_order.data:
             trial_number = trial_info['Trial Number']
-            critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset']))
+            critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset'], frame_rate), frame_rate)
             events = trial_events.get(trial_number, [])
 
             data.update({
@@ -113,8 +116,8 @@ def export_long(filename, s: Subject, invert_rl):
 
                 for frame in range(event_start, event_end):
                     data.update({
-                        'Time': '{:.2f}'.format(frame2ms(frame)),
-                        'Time Centered': '{:.2f}'.format(frame2ms(frame) - critical_onset_rounded),
+                        'Time': '{:.2f}'.format(frame2ms(frame, frame_rate)),
+                        'Time Centered': '{:.2f}'.format(frame2ms(frame, frame_rate) - critical_onset_rounded),
                         'Response': events[e].response,
                         'Accuracy': accuracy
                     })
@@ -132,6 +135,8 @@ def export_wide(filename, s: Subject, invert_rl):
                'L-image', 'C-image', 'R-image', 'Target Side', 'Target Image', 'Condition',
                'CritOnset']
 
+    frame_rate = round(s['Framerate'])
+
     # remaining columns are for each frame
     # ...
     # F-33 : frame before critical onset
@@ -140,7 +145,7 @@ def export_wide(filename, s: Subject, invert_rl):
     # ...
 
     # critical onset frames for each trial in trial order (trials may be repeated)
-    trial_cof = [(trial['Trial Number'], ms2frames(trial['Critical Onset'])) for trial in s.trial_order.data]
+    trial_cof = [(trial['Trial Number'], ms2frames(trial['Critical Onset'], frame_rate)) for trial in s.trial_order.data]
     if trial_cof:
         max_pre_onset = max([cof for t, cof in trial_cof])
         # number of frames coded for each trial
@@ -149,7 +154,7 @@ def export_wide(filename, s: Subject, invert_rl):
         post_onset_frames = [trial_frames.get(t, 0) - cof for t, cof in trial_cof]
         max_post_onset = max(post_onset_frames)
 
-        frame_columns = ['F{:.0f}'.format(frame2ms(f - max_pre_onset)) for f in range(max_pre_onset + max_post_onset)]
+        frame_columns = ['F{:.0f}'.format(frame2ms(f - max_pre_onset, frame_rate)) for f in range(max_pre_onset + max_post_onset)]
     else:
         frame_columns = []
 
@@ -162,7 +167,7 @@ def export_wide(filename, s: Subject, invert_rl):
         trial_events = s.events.trials()
         for trial_info in s.trial_order.data:
             trial_number = trial_info['Trial Number']
-            critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset']))
+            critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset'], frame_rate), frame_rate)
             events = trial_events.get(trial_number, [])
 
             data = {
@@ -190,7 +195,7 @@ def export_wide(filename, s: Subject, invert_rl):
                 accuracy = compute_accuracy(data['Target Side'], events[e].response)
 
                 for frame in range(event_start, event_end):
-                    frame_ms = frame2ms(frame) - critical_onset_rounded
+                    frame_ms = frame2ms(frame, frame_rate) - critical_onset_rounded
                     data['F{:.0f}'.format(frame_ms)] = accuracy
                 event_start = event_end
             writer.writerow(data)

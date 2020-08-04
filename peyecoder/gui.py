@@ -611,6 +611,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.show_frame()
 
+        # store frame rate for use when exporting data
+        self.subject.set_framerate(self.vid.frame_rate)
+
         # prompt for starting timecode
         self.subject.timecode_offsets[0] = self.get_timecode_frames()
         self.update_timecode()

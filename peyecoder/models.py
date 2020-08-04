@@ -22,7 +22,7 @@ class Subject:
 
     def __init__(self):
         self._d = {}
-
+        self._framerate = 30  # default value used when no video loaded and no framerate in .vcx file
         self.occluders = Occluders()
         self.timecode_offsets = Offsets()
         self.reasons = Reasons()
@@ -59,8 +59,13 @@ class Subject:
     def __getitem__(self, item):
         if item == 'Order':
             return self.trial_order.name()
+        if item == 'Framerate':
+            return self._framerate
 
         return self._d.__getitem__(item)
+
+    def set_framerate(self, framerate):
+        self._framerate = framerate
 
     def to_plist(self):
         data = {}
@@ -71,6 +76,7 @@ class Subject:
         data['Trial Order'] = self.trial_order.to_plist()
         data['Settings'] = self.settings.copy()
         data['Settings']['Response Keys'] = stringify_keys(self.settings['Response Keys'])
+        data['Framerate'] = self._framerate
         data.update(self.to_dict())
 
         return {'Subject': data}
@@ -91,6 +97,8 @@ class Subject:
             if 'Response Keys' in d['Settings']:
                 d['Settings']['Response Keys'] = intify_keys(d['Settings']['Response Keys'])
             self.settings.update(d['Settings'])
+        if 'Framerate' in d:
+            self._framerate = d['Framerate']
         self.update_from_dict(d)
 
 
