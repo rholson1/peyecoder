@@ -310,6 +310,7 @@ class OccluderDialog(QDialog):
                 # ValueError occurs for cells containing non-integer text
                 pass
         self.parent().subject.occluders = Occluders(occluders)
+        self.parent().show_frame()
 
     def add_row(self):
         self.table.setRowCount(self.table.rowCount() + 1)
