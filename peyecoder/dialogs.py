@@ -275,17 +275,27 @@ class OccluderDialog(QDialog):
         self.table.setHorizontalHeaderLabels(('x', 'y', 'w', 'h'))
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        self.add_row_button = QPushButton('Add Occluder')
+        self.add_row_button = QPushButton('Add')
         self.add_row_button.clicked.connect(self.add_row)
 
-        self.save_occluders_button = QPushButton('Save Occluders')
+        self.save_occluders_button = QPushButton('Save')
         self.save_occluders_button.clicked.connect(self.save_occluders)
+
+        self.delete_row_button = QPushButton('Delete')
+        self.delete_row_button.clicked.connect(self.delete_current_row)
+
+        self.buttons = QHBoxLayout()
+        self.buttons.addWidget(self.delete_row_button)
+        self.buttons.addWidget(self.add_row_button)
+        self.buttons.addWidget(self.save_occluders_button)
+
 
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.top_label)
         self.layout.addWidget(self.table)
-        self.layout.addWidget(self.add_row_button)
-        self.layout.addWidget(self.save_occluders_button)
+        self.layout.addLayout(self.buttons)
+        #self.layout.addWidget(self.add_row_button)
+        #self.layout.addWidget(self.save_occluders_button)
 
         self.setLayout(self.layout)
 
@@ -314,6 +324,11 @@ class OccluderDialog(QDialog):
 
     def add_row(self):
         self.table.setRowCount(self.table.rowCount() + 1)
+
+    def delete_current_row(self):
+        # require that _something_ is selected to indicate intent
+        if len(self.table.selectedRanges()) > 0:
+            self.table.removeRow(self.table.currentRow())
 
 
 class KeyTableWidget(QTableWidget):
