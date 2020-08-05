@@ -664,6 +664,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.subject_dialog.update_from_dict(self.subject.to_dict())
             self.filename = filename
             self.setWindowTitle('peyecoder - {}'.format(os.path.basename(filename)))
+            self.code_tab.set_responses(list(self.subject.settings['Response Keys'].values()))
 
     def save_datafile(self):
         if self.filename:

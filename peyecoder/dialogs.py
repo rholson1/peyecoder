@@ -479,6 +479,8 @@ class SettingsDialog(QDialog):
         d['Toggle Trial Status Key'] = self.toggle_box.get_key()
         # Update step label on main form
         self.parent().step_label.setText('Step: {}'.format(d['Step']))
+        # update code responses to reflect current response keys
+        self.parent().code_tab.set_responses(list(d['Response Keys'].values()))
 
     def show(self):
         super().show()
