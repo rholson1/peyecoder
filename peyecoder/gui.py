@@ -376,6 +376,15 @@ class MainWindow(QtWidgets.QMainWindow):
         reliability_action.setStatusTip('Compare coding against another file')
         reliability_action.triggered.connect(self.open_reliability_datafile)
 
+        next_step_action = QAction('Skip &forward', self)
+        next_step_action.setShortcut(']')
+        next_step_action.triggered.connect(self.next_step)
+
+        prev_step_action = QAction('Skip &backward', self)
+        prev_step_action.setShortcut('[')
+        prev_step_action.triggered.connect(self.prev_step)
+
+
         export_action = QAction('E&xport CSV', self)
         export_action.setStatusTip('Export CSV')
         export_action.triggered.connect(self.export_csv)
@@ -421,6 +430,9 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(exit_action)
 
         edit_menu = menu_bar.addMenu('&Edit')
+        edit_menu.addAction(next_step_action)
+        edit_menu.addAction(prev_step_action)
+        edit_menu.addSeparator()
         edit_menu.addAction(self.synchronize_action)
         edit_menu.addSeparator()
         edit_menu.addAction(self.open_subject_action)
