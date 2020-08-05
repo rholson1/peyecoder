@@ -406,6 +406,16 @@ class Events:
             all_error_rows += error_rows
             msg.append('The last event in a trial should have status "off"')
 
+        # 6. must not have 2 consecutive events with trial status 'off'
+        error_rows = []
+        for i in range(1, len(self.events)):
+            if self.events[i-1].status == self.events[i].status == 'off':
+                error_rows.append(i)
+        if error_rows:
+            all_error_rows += error_rows
+            msg.append('Cannot have consecutive events with status "off"')
+
+
         return all_error_rows, msg
 
     def __getitem__(self, item):
