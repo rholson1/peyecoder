@@ -253,6 +253,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.logtable = LogTable()
         self.logtable.setColumnCount(3)
         self.logtable.setAlternatingRowColors(True)
+        self.logtable.setStyleSheet("QTableWidget::item:selected{background-color: palette(Highlight); color: palette(HighlightedText);};")
         self.logtable.setHorizontalHeaderLabels(self.logtable.Labels.Prescreen1)
 
         self.logtable.setMinimumWidth(400)
