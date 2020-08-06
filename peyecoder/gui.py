@@ -59,7 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.code_comparison_dialog = None
         self.report_dialog = None
 
-        self.subject = Subject()
+        self.subject = Subject(self)
 
         # Timecode object used to translate from frames to SMTP timecode
         # Initialize with default framerate; will be updated when a video is loaded
@@ -128,7 +128,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def reset_state(self):
         """Initialize state or reset to initial state"""
-        self.subject = Subject()
+        self.subject = Subject(self)
         self.filename = ''
         self.setWindowTitle('peyecoder')
         # reset video source

@@ -20,7 +20,7 @@ class Subject:
                   'Primary PS Complete', 'Secondary PS Complete',
                   'Sex', 'Unused Trials', 'Notes')
 
-    def __init__(self):
+    def __init__(self, parent=None):
         self._d = {}
         self._framerate = 30  # default value used when no video loaded and no framerate in .vcx file
         self.occluders = Occluders()
@@ -39,6 +39,7 @@ class Subject:
                 int(Qt.Key_5): 'center'
             }
         }
+        self.parent = parent
 
     def update_from_dict(self, d):
         for f in self.fieldnames:
@@ -60,6 +61,9 @@ class Subject:
         if item == 'Order':
             return self.trial_order.name()
         if item == 'Framerate':
+            # return framerate of loaded video, if present.  Otherwise, return stored framerate
+            if self.parent and self.parent.vid:
+                return self.parent.vid.frame_rate
             return self._framerate
 
         return self._d.__getitem__(item)
@@ -76,7 +80,7 @@ class Subject:
         data['Trial Order'] = self.trial_order.to_plist()
         data['Settings'] = self.settings.copy()
         data['Settings']['Response Keys'] = stringify_keys(self.settings['Response Keys'])
-        data['Framerate'] = self._framerate
+        data['Framerate'] = self['Framerate']
         data.update(self.to_dict())
 
         return {'Subject': data}
