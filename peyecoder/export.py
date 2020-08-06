@@ -2,7 +2,7 @@
 from peyecoder.models import Subject
 import csv
 from dateutil import parser
-from math import ceil
+from math import floor
 
 
 def frame2ms(f, frame_rate=30):
@@ -11,8 +11,8 @@ def frame2ms(f, frame_rate=30):
 
 
 def ms2frames(ms, frame_rate=30):
-    """Convert a time (in ms) to frames, rounding up"""
-    return ceil(ms * frame_rate / 1000)
+    """Convert a time (in ms) to frames, rounding down"""
+    return floor(ms * frame_rate / 1000)
 
 
 def age_months(date_of_birth, date_of_interest):
