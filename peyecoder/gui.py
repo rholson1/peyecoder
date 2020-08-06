@@ -379,10 +379,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         next_step_action = QAction('Skip &forward', self)
         next_step_action.setShortcut(']')
+        next_step_action.setShortcutContext(Qt.WidgetShortcut)
         next_step_action.triggered.connect(self.next_step)
 
         prev_step_action = QAction('Skip &backward', self)
         prev_step_action.setShortcut('[')
+        prev_step_action.setShortcutContext(Qt.WidgetShortcut)
         prev_step_action.triggered.connect(self.prev_step)
 
 
@@ -501,6 +503,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Clear the log table when pressing a key that results in changing the position in the video
         if e.key() in (Qt.Key_Right, Qt.Key_Left, Qt.Key_BracketLeft, Qt.Key_BracketRight, Qt.Key_Space):
             self.logtable.clearSelection()
+            self.logtable.setCurrentIndex(QtCore.QModelIndex())  # clear current index within logtable
 
     def change_selected_trials(self, delta):
         rows = self.logtable.selected_rows()
