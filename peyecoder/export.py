@@ -165,8 +165,11 @@ def export_wide(filename, s: Subject, invert_rl):
         writer.writeheader()
 
         trial_events = s.events.trials()
+        unused = s.trial_order.unused
         for trial_info in s.trial_order.data:
             trial_number = trial_info['Trial Number']
+            if trial_number in unused:
+                continue
             critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset'], frame_rate), frame_rate)
             events = trial_events.get(trial_number, [])
 
