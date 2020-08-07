@@ -166,6 +166,7 @@ def export_wide(filename, s: Subject, invert_rl):
 
         trial_events = s.events.trials()
         unused = s.trial_order.unused
+        prescreen_reasons = s.reasons.unused_reasons()
         for trial_info in s.trial_order.data:
             trial_number = trial_info['Trial Number']
             if trial_number in unused:
@@ -173,17 +174,23 @@ def export_wide(filename, s: Subject, invert_rl):
             critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset'], frame_rate), frame_rate)
             events = trial_events.get(trial_number, [])
 
+            target_side = trial_info.inverted_target() if invert_rl else trial_info['Target Side']
+            l_image = trial_info['Left Image']
+            r_image = trial_info['Right Image']
+            target_image = l_image if target_side == 'L' else r_image  # probably
+
             data = {
                 'Sub Num': s['Number'],
                 'Months': '{:0.1f}'.format(age_months(s['Birthday'], s['Date of Test'])),
                 'Sex': s.get_sex_display(),
                 'Order': s.trial_order.name(),
                 'Tr Num': trial_number,
-                'Prescreen Notes': s['Notes'],
-                'L-image': trial_info['Left Image'],
+                'Prescreen Notes': prescreen_reasons.get(trial_number, ''),
+                'L-image': l_image,
                 'C-image': trial_info['Center Image'],
-                'R-image': trial_info['Right Image'],
-                'Target Side': trial_info.inverted_target() if invert_rl else trial_info['Target Side'],
+                'R-image': r_image,
+                'Target Side': target_side,
+                'Target Image': target_image,
                 'Condition': trial_info['Condition'],
                 'CritOnset': trial_info['Critical Onset'],
                 'CritOffset': trial_info.get('Critical Offset', 0)
