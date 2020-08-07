@@ -133,7 +133,7 @@ def export_wide(filename, s: Subject, invert_rl):
     """
     columns = ['Sub Num', 'Months', 'Sex', 'Order', 'Tr Num', 'Prescreen Notes',
                'L-image', 'C-image', 'R-image', 'Target Side', 'Target Image', 'Condition',
-               'CritOnset']
+               'CritOnset', 'CritOffset']
 
     frame_rate = round(s['Framerate'])
 
@@ -185,7 +185,8 @@ def export_wide(filename, s: Subject, invert_rl):
                 'R-image': trial_info['Right Image'],
                 'Target Side': trial_info.inverted_target() if invert_rl else trial_info['Target Side'],
                 'Condition': trial_info['Condition'],
-                'CritOnset': trial_info['Critical Onset']
+                'CritOnset': trial_info['Critical Onset'],
+                'CritOffset': trial_info.get('Critical Offset', 0)
             }
 
             event_start = 0
