@@ -285,8 +285,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.active_tab = index
         self.update_log()
 
-    def update_log(self):
+    def update_log(self, preserve_highlight=False):
         """Update data and labels in log file"""
+        if preserve_highlight:
+            rows = self.logtable.selected_rows()
         if self.active_tab == TAB_PRESCREEN:
             self.logtable.set_prescreen_labels(self.prescreen_tab.prescreener())
             self.logtable.load_data(self.subject.reasons.render(self.prescreen_tab.prescreener()))
@@ -297,6 +299,11 @@ class MainWindow(QtWidgets.QMainWindow):
             errors, err_msg = self.subject.events.error_items(self.subject.trial_order.unused + self.subject.reasons.unused())
             self.logtable.redden_rows(errors)
             self.message_box.setText('\n'.join(err_msg))
+        if preserve_highlight:
+            self.logtable.itemSelectionChanged.disconnect(self.select_code_row)
+            self.logtable.select_rows(rows)
+
+            self.logtable.itemSelectionChanged.connect(self.select_code_row)
 
     def select_code_row(self):
         """ When a row or rows have been selected in the code log, update the code tab widgets and the video position
@@ -324,7 +331,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def add_event(self, event):
         event.frame = self.vid.frame_number
         self.subject.events.add_event(event)
-        self.update_log()
+        self.update_log(preserve_highlight=True)
         # Scroll to the newly-added item
         row = self.subject.events.absolute_index(event)
         self.logtable.scroll_to_row(row)
@@ -501,9 +508,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.code_tab.response_box.setCurrentText(self.subject.settings['Response Keys'][e.key()])
 
         # Clear the log table when pressing a key that results in changing the position in the video
-        if e.key() in (Qt.Key_Right, Qt.Key_Left, Qt.Key_BracketLeft, Qt.Key_BracketRight, Qt.Key_Space):
-            self.logtable.clearSelection()
-            self.logtable.setCurrentIndex(QtCore.QModelIndex())  # clear current index within logtable
+        # if e.key() in (Qt.Key_Right, Qt.Key_Left, Qt.Key_BracketLeft, Qt.Key_BracketRight, Qt.Key_Space):
+        #    self.logtable.clearSelection()
+        #    self.logtable.setCurrentIndex(QtCore.QModelIndex())  # clear current index within logtable
 
     def change_selected_trials(self, delta):
         rows = self.logtable.selected_rows()
