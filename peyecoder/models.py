@@ -41,6 +41,12 @@ class Subject:
         }
         self.parent = parent
 
+    def reset(self):
+        """Reset anything that shouldn't persist when a new data file is loaded."""
+        self.reasons = Reasons()
+        self.events = Events()
+        self.trial_order = TrialOrder()
+
     def update_from_dict(self, d):
         for f in self.fieldnames:
             self._d[f] = d.get(f, '')

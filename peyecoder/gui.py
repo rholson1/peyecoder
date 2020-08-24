@@ -667,6 +667,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def open_datafile(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Data File", filter="Data Files (*.vcx)") #, QtCore.QDir.homePath())
         if filename != '':
+            self.subject.reset()
             self.subject.from_plist(load_datafile(filename))
 
             self.update_log()
