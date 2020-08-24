@@ -296,7 +296,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.logtable.set_code_labels()
             self.logtable.load_data(self.subject.events.render(self.subject.timecode_offsets, self.timecode))
 
-            errors, err_msg = self.subject.events.error_items(self.subject.trial_order.unused + self.subject.reasons.unused())
+            errors, err_msg = self.subject.events.error_items(self.subject.trial_order.unused + self.subject.reasons.unused(),
+                                                              self.subject.trial_order.max_trial)
             self.logtable.redden_rows(errors)
             self.message_box.setText('\n'.join(err_msg))
         if preserve_highlight:

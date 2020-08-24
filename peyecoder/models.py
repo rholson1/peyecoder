@@ -364,7 +364,7 @@ class Events:
             )
         return Events(events)
 
-    def error_items(self, unused_trials):
+    def error_items(self, unused_trials, max_trial):
         """ Check for errors and return a list of row numbers (which should be highlighted) and
         corresponding error messages"""
         all_error_rows = []
@@ -429,6 +429,11 @@ class Events:
             all_error_rows += error_rows
             msg.append('Cannot have consecutive events with status "off"')
 
+        # 7. Trial number should not exceed maximum trial number in trial order
+        error_rows = [i for i, e in enumerate(self.events) if e.trial > max_trial]
+        if error_rows:
+            all_error_rows += error_rows
+            msg.append('The maximum trial number in the trial order is {}'.format(max_trial))
 
         return all_error_rows, msg
 
@@ -531,9 +536,11 @@ def to_int(s, default=0):
 class TrialOrder:
     def __init__(self, data=None):
         self.unused = []
+        self.max_trial = 0
         if data:
             self.data = data
             self.calc_unused()
+            self.calc_max_trial()
         else:
             self.data = []
 
@@ -548,6 +555,10 @@ class TrialOrder:
 
     def calc_unused(self):
         self.unused = [d['Trial Number'] for d in self.data if d['Used'] == 'no']
+
+    def calc_max_trial(self):
+        """Determine the highest-numbered trial in the trial order"""
+        self.max_trial = max([d['Trial Number'] for d in self.data])
 
     def read_trial_order(self, filename):
         """ Read data from a trial order file"""
@@ -577,6 +588,7 @@ class TrialOrder:
 
         self.data = data
         self.calc_unused()
+        self.calc_max_trial()
 
     def to_plist(self):
         return self.data  # maybe?
