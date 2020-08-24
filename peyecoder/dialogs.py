@@ -574,6 +574,7 @@ class ExportDialog(QDialog):
 
         self.wide_radio.setChecked(True)  # default wide
         self.invert_checkbox = QCheckBox('Exchange R and L in trial order')
+        self.invert_checkbox.setChecked(True)  # default checked
 
         self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.export_csv)
