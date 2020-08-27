@@ -236,6 +236,7 @@ class LogTable(QTableWidget):
     def select_rows(self, rows):
         """Select rows in the table specified as keys in a dictionary"""
         first = True
+        firstrow = 0
         for r in rows:
             if first:
                 firstrow = r
