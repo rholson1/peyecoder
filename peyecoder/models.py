@@ -246,7 +246,7 @@ class Reasons:
 
 @total_ordering
 class Event:
-    def __init__(self, trial=0, status='', response='', frame=0):
+    def __init__(self, trial=0, status=False, response='', frame=0):
         self.trial = trial
         self._status = status
         self.response = response
