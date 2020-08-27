@@ -4,6 +4,10 @@ import csv
 from dateutil import parser
 from math import floor
 
+INVERT_TRIAL_ORDER = 1
+INVERT_RESPONSE = 2
+INVERSION = {INVERT_TRIAL_ORDER: 'Trial Order', INVERT_RESPONSE: 'Response'}
+
 
 def frame2ms(f, frame_rate=30):
     """Convert a frame number to a time in ms"""
@@ -50,13 +54,12 @@ def compute_accuracy(target, response):
     return accuracy
 
 
-def export(filename, s: Subject, format='long', invert_rl=False, frame_rate=30):
+def export(filename, s: Subject, format='long', invert_rl=INVERT_TRIAL_ORDER):
     """Export subject data to a .csv file
     :param s: subject object
     :param filename: full path to the destination file
     :param format: 'wide' or 'long' format for the export file
-    :param invert_rl: if True, invert target location in trial order
-    :param frame_rate: frame rate (frames per second)
+    :param invert_rl: controls which L-R elements get inverted in output file
     """
     if format == 'long':
         export_long(filename, s, invert_rl)
@@ -68,10 +71,10 @@ def export_long(filename, s: Subject, invert_rl):
     """Export subject data to a .csv file
     :param s: subject object
     :param filename: full path to the destination file
-    :param invert_rl: if True, invert target location in trial order
+    :param invert_rl: controls which L-R elements get inverted in output file
     """
     fields = ('Sub Num', 'Months', 'Sex', 'Trial Order', 'Trial Number', 'Prescreen Notes',
-              'Left Image', 'Center Image', 'Right Image', 'Target Side', 'Condition',
+              'Left Image', 'Center Image', 'Right Image', 'Target Side', 'Inversion', 'Condition',
               'Time', 'Time Centered', 'Response', 'Accuracy')
 
     frame_rate = round(s['Framerate'])
@@ -86,7 +89,8 @@ def export_long(filename, s: Subject, invert_rl):
             'Months': '{:0.1f}'.format(age_months(s['Birthday'], s['Date of Test'])),
             'Sex': s.get_sex_display(),
             'Trial Order': s.trial_order.name(),
-            'Prescreen Notes': s['Notes']
+            'Prescreen Notes': s['Notes'],
+            'Inversion': INVERSION[invert_rl]
         }
 
         trial_events = s.events.trials()
@@ -95,12 +99,21 @@ def export_long(filename, s: Subject, invert_rl):
             critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset'], frame_rate), frame_rate)
             events = trial_events.get(trial_number, [])
 
+            if invert_rl == INVERT_TRIAL_ORDER:
+                target_side = trial_info.inverted_target()
+                l_image = trial_info['Right Image']
+                r_image = trial_info['Left Image']
+            else:
+                target_side = trial_info['Target Side']
+                l_image = trial_info['Left Image']
+                r_image = trial_info['Right Image']
+
             data.update({
                 'Trial Number': trial_number,
-                'Left Image': trial_info.get('Left Image', ''),
+                'Left Image': l_image,
                 'Center Image': trial_info.get('Center Image', ''),
-                'Right Image': trial_info.get('Right Image', ''),
-                'Target Side': trial_info.inverted_target() if invert_rl else trial_info.get('Target Side', ''),
+                'Right Image': r_image,
+                'Target Side': target_side,
                 'Condition': trial_info.get('Condition', '')
             })
 
@@ -112,13 +125,18 @@ def export_long(filename, s: Subject, invert_rl):
                 except IndexError:
                     event_end = trial_frames
 
-                accuracy = compute_accuracy(data['Target Side'], events[e].response)
+                if invert_rl == INVERT_RESPONSE:
+                    response = events[e].inverted_response()
+                else:
+                    response = events[e].response
+
+                accuracy = compute_accuracy(data['Target Side'], response)
 
                 for frame in range(event_start, event_end):
                     data.update({
                         'Time': '{:.2f}'.format(frame2ms(frame, frame_rate)),
                         'Time Centered': '{:.2f}'.format(frame2ms(frame, frame_rate) - critical_onset_rounded),
-                        'Response': events[e].response,
+                        'Response': response,
                         'Accuracy': accuracy
                     })
                     writer.writerow(data)
@@ -129,10 +147,10 @@ def export_wide(filename, s: Subject, invert_rl):
     """Export subject data to a .csv file in "wide" format (the old iCoder style)
     :param s: subject object
     :param filename: full path to the destination file
-    :param invert_rl: If true, invert target location in trial order
+    :param invert_rl: controls which L-R elements get inverted in output file
     """
     columns = ['Sub Num', 'Months', 'Sex', 'Order', 'Tr Num', 'Prescreen Notes',
-               'L-image', 'C-image', 'R-image', 'Target Side', 'Target Image', 'Condition',
+               'L-image', 'C-image', 'R-image', 'Target Side', 'Target Image', 'Inversion', 'Condition',
                'CritOnset', 'CritOffset']
 
     frame_rate = round(s['Framerate'])
@@ -174,10 +192,16 @@ def export_wide(filename, s: Subject, invert_rl):
             critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset'], frame_rate), frame_rate)
             events = trial_events.get(trial_number, [])
 
-            target_side = trial_info.inverted_target() if invert_rl else trial_info['Target Side']
-            l_image = trial_info['Left Image']
-            r_image = trial_info['Right Image']
-            target_image = l_image if target_side == 'L' else r_image  # probably
+            if invert_rl == INVERT_TRIAL_ORDER:
+                target_side = trial_info.inverted_target()
+                l_image = trial_info['Right Image']
+                r_image = trial_info['Left Image']
+            else:
+                target_side = trial_info['Target Side']
+                l_image = trial_info['Left Image']
+                r_image = trial_info['Right Image']
+
+            target_image = l_image if target_side == 'L' else r_image
 
             data = {
                 'Sub Num': s['Number'],
@@ -191,6 +215,7 @@ def export_wide(filename, s: Subject, invert_rl):
                 'R-image': r_image,
                 'Target Side': target_side,
                 'Target Image': target_image,
+                'Inversion': INVERSION[invert_rl],
                 'Condition': trial_info['Condition'],
                 'CritOnset': trial_info['Critical Onset'],
                 'CritOffset': trial_info.get('Critical Offset', 0)
@@ -203,7 +228,11 @@ def export_wide(filename, s: Subject, invert_rl):
                 except IndexError:
                     event_end = trial_frames.get(trial_number, 0)
 
-                accuracy = compute_accuracy(data['Target Side'], events[e].response)
+                if invert_rl == INVERT_RESPONSE:
+                    response = events[e].inverted_response()
+                else:
+                    response = events[e].response
+                accuracy = compute_accuracy(data['Target Side'], response)
 
                 for frame in range(event_start, event_end):
                     frame_ms = frame2ms(frame, frame_rate) - critical_onset_rounded

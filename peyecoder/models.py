@@ -276,6 +276,14 @@ class Event:
         return 'Trial: {}, Status: {}, Response: {}, Frame: {}'.format(
             self.trial, self.status, self.response, self.frame)
 
+    def inverted_response(self):
+        if 'right' in self.response:
+            return self.response.replace('right', 'left')
+        elif 'left' in self.response:
+            return self.response.replace('left', 'right')
+        else:
+            return self.response
+
 
 # This version of Events only allows one event per timecode
 class EventsA:

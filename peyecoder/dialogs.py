@@ -17,7 +17,7 @@ import os
 from peyecoder.models import Occluders, Subject
 from peyecoder.panels import LogTable
 from peyecoder.file_utils import load_datafile
-from peyecoder.export import export
+from peyecoder.export import export, INVERT_RESPONSE, INVERT_TRIAL_ORDER
 
 
 def get_save_filename(parent, caption, filter, default_suffix=''):
@@ -571,10 +571,15 @@ class ExportDialog(QDialog):
         self.format_radiogroup = QButtonGroup()
         self.format_radiogroup.addButton(self.wide_radio, id=1)
         self.format_radiogroup.addButton(self.long_radio, id=2)
-
         self.wide_radio.setChecked(True)  # default wide
-        self.invert_checkbox = QCheckBox('Exchange R and L in trial order')
-        self.invert_checkbox.setChecked(True)  # default checked
+
+        self.invert_label = QLabel('Left-Right Inversion:')
+        self.invert_trial_order_radio = QRadioButton('Invert Target Side and Images (iCoder)')
+        self.invert_response_radio = QRadioButton('Invert Responses')
+        self.invert_radiogroup = QButtonGroup()
+        self.invert_radiogroup.addButton(self.invert_trial_order_radio, id=INVERT_TRIAL_ORDER)
+        self.invert_radiogroup.addButton(self.invert_response_radio, id=INVERT_RESPONSE)
+        self.invert_trial_order_radio.setChecked(True)  # default to iCoder-style inversion
 
         self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.export_csv)
@@ -584,16 +589,17 @@ class ExportDialog(QDialog):
         layout.addWidget(self.format_label)
         layout.addWidget(self.wide_radio)
         layout.addWidget(self.long_radio)
-        layout.addWidget(self.invert_checkbox)
+        layout.addWidget(self.invert_label)
+        layout.addWidget(self.invert_trial_order_radio)
+        layout.addWidget(self.invert_response_radio)
         layout.addWidget(self.button_box)
-
         self.setLayout(layout)
 
     def export_csv(self):
         filename = get_save_filename(self, "Save CSV File", filter="CSV Files (*.csv)", default_suffix='csv')
         if filename != '':
             export_format = {1: 'wide', 2: 'long'}[self.format_radiogroup.checkedId()]
-            export(filename, self.parent().subject, format=export_format, invert_rl=self.invert_checkbox.isChecked())
+            export(filename, self.parent().subject, format=export_format, invert_rl=self.invert_radiogroup.checkedId())
             self.accept()
         else:
             self.reject()
