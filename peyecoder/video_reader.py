@@ -107,7 +107,10 @@ class BufferedVideoReader(VideoReader):
                     success, frame = self.get_frame()
                     if success:
                         self.buffer.append((i, frame))
-                assert target_frame == self.buffer[-1][0]
+                try:
+                    assert target_frame == self.buffer[-1][0]
+                except AssertionError:
+                    print('Assertion error.  target_frame = {}, self.buffer[-1][0] = {}'.format(target_frame, self.buffer[-1][0]))
                 self.buffer_cursor = self.buffer_len - 1
             else:
                 for i in range(target_frame - self.buffer[-1][0]):
