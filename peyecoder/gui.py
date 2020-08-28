@@ -658,6 +658,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.video_source = filename
 
             self.initialize_video()
+            self.subject.events.remove_offset(self.subject.timecode_offsets.get_offset(0))
             try:
                 self.audio.set_video_source(self.video_source, self.vid.frame_rate)
             except FileNotFoundError as e:
@@ -670,6 +671,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if filename != '':
             self.subject.reset()
             self.subject.from_plist(load_datafile(filename))
+            if self.vid:
+                self.subject.events.remove_offset(self.subject.timecode_offsets.get_offset(0))
 
             self.update_log()
             self.update_info_panel()

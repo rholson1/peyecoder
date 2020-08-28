@@ -246,11 +246,23 @@ class Reasons:
 
 @total_ordering
 class Event:
-    def __init__(self, trial=0, status=False, response='', frame=0):
+    def __init__(self, trial=0, status=False, response='', frame=0, has_offset=False):
+        """
+        Event object
+        :param trial: Trial number
+        :param status: Trial status (on or off)
+        :param response: Coder's response (e.g., left, right, center, off, ...)
+        :param frame: Frame number in the video
+        :param has_offset: Does the frame number have an offset for a timecode that does not start at 00:00:00:00?
+
+        has_offset will only be True for events imported from old iCoder files that specify events using a timecode
+        instead of a frame number.
+        """
         self.trial = trial
         self._status = status
         self.response = response
         self.frame = frame
+        self.has_offset = has_offset
 
     @property
     def status(self):
@@ -363,14 +375,25 @@ class Events:
                     e['Timecode']['Frame'])
                 )
                 e['Frame'] = timecode.frames - 1
+                has_offset = True  # by assumption; we don't know if the timecode of the first frame is 00:00:00:00
+            else:
+                has_offset = False
 
             events.append(
                 Event(trial=e['Trial'],
                       status=e['Trial Status'] in ('on', True),
                       response=e['Type'],
-                      frame=e['Frame'])
+                      frame=e['Frame'],
+                      has_offset=has_offset)
             )
         return Events(events)
+
+    def remove_offset(self, offset):
+        """Remove offset from any events having has_offset == True"""
+        for event in self.events:
+            if event.has_offset:
+                event.frame -= offset
+                event.has_offset = False
 
     def error_items(self, unused_trials, max_trial):
         """ Check for errors and return a list of row numbers (which should be highlighted) and
