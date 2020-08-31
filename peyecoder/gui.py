@@ -5,7 +5,7 @@ import math
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtWidgets import QLabel, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
-    QTabWidget, QSplitter, QScrollArea
+    QTabWidget, QSplitter, QScrollArea, QMessageBox
 from PySide2.QtGui import Qt
 from PySide2.QtCore import QObject, QEvent
 
@@ -125,6 +125,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.build_menu()
 
         self.reset_state()
+
+    def closeEvent(self, event):
+        if self.subject.dirty:
+            ret = QMessageBox.warning(self, 'Peyecoder', 'Do you want to save changes?',
+                                      QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+                                      defaultButton=QMessageBox.Save)
+            if ret == QMessageBox.Save:
+                # save and, if successful, close
+                if self.save_datafile():
+                    event.accept()
+                else:
+                    event.ignore()
+            elif ret == QMessageBox.Cancel:
+                # don't save or close
+                event.ignore()
+            else:
+                # close without saving
+                event.accept()
+        else:
+            # Saving is not required; close
+            event.accept()
 
     def reset_state(self):
         """Initialize state or reset to initial state"""
@@ -328,6 +349,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.subject.reasons.add_reason(reason, ps=self.prescreen_tab.group_who.checkedId())
         self.update_log()
         self.update_info_panel()
+        self.subject.dirty = True
 
     def add_event(self, event):
         event.frame = self.vid.frame_number
@@ -336,6 +358,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Scroll to the newly-added item
         row = self.subject.events.absolute_index(event)
         self.logtable.scroll_to_row(row)
+        self.subject.dirty = True
 
     def delete_data_rows(self, rows):
         """Delete rows from events or reasons as appropriate """
@@ -349,6 +372,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # delete code entries by row (in descending order)
             for row in reversed(sorted(rows)):
                 self.subject.events.delete_event(row)
+        self.subject.dirty = True
 
     def build_menu(self):
         """Create the menu bar and global fixed actions"""
@@ -684,14 +708,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def save_datafile(self):
         if self.filename:
-            save_datafile(self.filename, self.subject.to_plist())
+            if save_datafile(self.filename, self.subject.to_plist()):
+                self.subject.dirty = False
         else:
             self.save_as_datafile()
+        return not self.subject.dirty
 
     def save_as_datafile(self):
         filename = get_save_filename(self, "Save Data File", filter="Data Files (*.vcx)", default_suffix='vcx')
         if filename != '':
-            save_datafile(filename, self.subject.to_plist())
+            if save_datafile(filename, self.subject.to_plist()):
+                self.subject.dirty = False
             self.filename = filename
             self.setWindowTitle('peyecoder - {}'.format(os.path.basename(filename)))
 

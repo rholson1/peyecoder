@@ -39,6 +39,7 @@ class Subject:
                 int(Qt.Key_5): 'center'
             }
         }
+        self.dirty = False  # track existence of unsaved changes
         self.parent = parent
 
     def reset(self):

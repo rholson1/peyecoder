@@ -211,6 +211,7 @@ class SubjectDialog(QDialog):
         }
 
         self.parent().subject.update_from_dict(d)
+        self.parent().subject.dirty = True
         self.parent().update_info_panel()
 
     def update_from_dict(self, d):
@@ -320,6 +321,7 @@ class OccluderDialog(QDialog):
                 # ValueError occurs for cells containing non-integer text
                 pass
         self.parent().subject.occluders = Occluders(occluders)
+        self.parent().subject.dirty = True
         self.parent().show_frame()
 
     def add_row(self):
@@ -481,6 +483,7 @@ class SettingsDialog(QDialog):
         self.parent().step_label.setText('Step: {}'.format(d['Step']))
         # update code responses to reflect current response keys
         self.parent().code_tab.set_responses(list(d['Response Keys'].values()))
+        self.parent().subject.dirty = True
 
     def show(self):
         super().show()

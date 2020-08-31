@@ -12,8 +12,12 @@ def load_datafile(filename):
 
 def save_datafile(filename, data):
     """Save data to a datafile"""
-    with open(filename, 'wb') as f:
-        plistlib.dump(data, f)
+    try:
+        with open(filename, 'wb') as f:
+            plistlib.dump(data, f)
+        return True
+    except:
+        return False
 
 
 # Functions to convert dictionary with integer keys to string keys and vice versa
