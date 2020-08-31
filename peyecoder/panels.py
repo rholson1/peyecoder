@@ -4,6 +4,7 @@ from PySide2.QtWidgets import QWidget, QLabel, QPushButton, QSpinBox, QComboBox,
     QButtonGroup, QHeaderView
 
 from PySide2.QtGui import Qt
+from PySide2 import QtGui
 
 from peyecoder.models import Reason, Event
 
@@ -166,6 +167,13 @@ class LogTable(QTableWidget):
         self.setVerticalScrollMode(self.ScrollPerPixel)
 
         self.data = []  # list of iterables
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
+        """Add repaint call to address failure to repaint on MacOS when using arrows to navigate past top or bottom of
+        the logtable.
+        """
+        super().keyPressEvent(event)
+        self.repaint()
 
     def add_entry(self, entry):
         """ Append an entry to the table data and to the table"""
