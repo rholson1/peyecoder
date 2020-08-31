@@ -1,11 +1,12 @@
 import setuptools
+from peyecoder import version
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="peyecoder",
-    version="1.0.2",
+    version=version,
     author="Rob Olson",
     author_email="rolson@waisman.wisc.edu",
     description="Software for coding eye movements",

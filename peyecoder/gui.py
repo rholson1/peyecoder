@@ -20,6 +20,7 @@ from peyecoder.file_utils import load_datafile, save_datafile
 from peyecoder.dialogs import SubjectDialog, TimecodeDialog, OccluderDialog, SettingsDialog, CodeComparisonDialog, \
     ReportDialog, ExportDialog, get_save_filename
 from peyecoder.reliability import reliability_report
+from peyecoder import version
 
 STATE_PLAYING = 1
 STATE_PAUSED = 2
@@ -419,6 +420,11 @@ class MainWindow(QtWidgets.QMainWindow):
         prev_step_action.setShortcutContext(Qt.WidgetShortcut)
         prev_step_action.triggered.connect(self.prev_step)
 
+        help_url_action = QAction('Online Help', self)
+        help_url_action.triggered.connect(self.open_help_url)
+
+        about_box_action = QAction('About peyecoder', self)
+        about_box_action.triggered.connect(self.show_about_box)
 
         export_action = QAction('E&xport CSV', self)
         export_action.setStatusTip('Export CSV')
@@ -473,6 +479,23 @@ class MainWindow(QtWidgets.QMainWindow):
         edit_menu.addAction(self.open_subject_action)
         edit_menu.addAction(self.open_occluders_action)
         edit_menu.addAction(self.open_settings_action)
+
+        help_menu = menu_bar.addMenu('&Help')
+        help_menu.addAction(help_url_action)
+        help_menu.addAction(about_box_action)
+
+    def open_help_url(self):
+        target = 'https://rholson1.github.io/peyecoder/'
+        url = QtCore.QUrl(target)
+        if not QtGui.QDesktopServices.openUrl(url):
+            QMessageBox.warning(self, 'Open URL', 'Unable to open {}'.format(target))
+
+    def show_about_box(self):
+        QMessageBox.about(self, 'About peyecoder',
+                          ('<center>peyecoder {}</center>'
+                           '<br/><br/>'
+                           'To cite, see <a href="https://doi.org/10.5281/zenodo.3939233">https://doi.org/10.5281/zenodo.3939233</a>'
+                           ).format(version))
 
     def resynchronize(self):
         # Prompt user to enter a new timestamp for the current frame
