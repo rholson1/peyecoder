@@ -39,18 +39,29 @@ def compute_accuracy(target, response):
     target is one of R, L, N
     response is one of right, left, center, away, off
     """
-    if (target == 'R' and response == 'right') or (target == 'L' and response == 'left'):
-        accuracy = 1
-    elif target in ('R', 'L') and response == 'center':
-        accuracy = 0.5
-    elif target in ('R', 'L') and response in ('right', 'left'):
-        accuracy = 0
-    elif response == 'away':
-        accuracy = '-'
-    elif response == 'off':
-        accuracy = '.'
+    if target in ('R', 'L', 'N'):
+        if (target == 'R' and response == 'right') or (target == 'L' and response == 'left'):
+            accuracy = 1
+        elif target in ('R', 'L') and response == 'center':
+            accuracy = 0.5
+        elif target in ('R', 'L') and response in ('right', 'left'):
+            accuracy = 0
+        elif response == 'away':
+            accuracy = '-'
+        elif response == 'off':
+            accuracy = '.'
+        else:
+            accuracy = 'N/A'
     else:
-        accuracy = 'N/A'
+        # Nonstandard coding
+        if target == response:
+            accuracy = 1
+        elif response == 'away':
+            accuracy = '-'
+        elif response == 'off':
+            accuracy = '.'
+        else:
+            accuracy = 0
     return accuracy
 
 
