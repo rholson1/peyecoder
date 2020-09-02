@@ -838,7 +838,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def setPosition(self, position):
         self.vid.goto_framenumber(position)
-        self.audio.seek(position)
+        try:
+            self.audio.seek(position)
+        except:
+            QMessageBox.warning(self, 'peyecoder', ('Unable to seek to the requested position in the audio.'
+                                                    ' This likely means that an incorrect timecode was entered '
+                                                    'when the video was opened.'), QMessageBox.Ok)
         self.update_timecode()
         self.show_frame()
 
