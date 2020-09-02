@@ -121,3 +121,16 @@ class BufferedVideoReader(VideoReader):
 
             self.buffer_cursor = self.buffer_len - 1
         self.frame_number, self.frame = self.buffer[self.buffer_cursor]
+
+    def reload_buffer(self):
+        """Reload the frames stored in the buffer to clear any old occluder images"""
+        start_frame = self.buffer[0][0]
+        self.seek(start_frame)
+        for i in range(start_frame, start_frame + self.buffer_len):
+            success, frame = self.get_frame()
+            if success:
+                self.buffer.append((i, frame))
+        self.frame_number, self.frame = self.buffer[self.buffer_cursor]
+
+
+

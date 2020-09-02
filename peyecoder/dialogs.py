@@ -322,6 +322,7 @@ class OccluderDialog(QDialog):
                 pass
         self.parent().subject.occluders = Occluders(occluders)
         self.parent().subject.dirty = True
+        self.parent().vid.reload_buffer()
         self.parent().show_frame()
 
     def add_row(self):
