@@ -424,6 +424,7 @@ class MainWindow(QtWidgets.QMainWindow):
         help_url_action.triggered.connect(self.open_help_url)
 
         about_box_action = QAction('About peyecoder', self)
+        about_box_action.setMenuRole(QAction.NoRole)
         about_box_action.triggered.connect(self.show_about_box)
 
         export_action = QAction('E&xport CSV', self)
@@ -454,6 +455,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.open_settings_action = QAction('&Settings', self)
         self.open_settings_action.setStatusTip('Open Settings Window')
+        self.open_settings_action.setMenuRole(QAction.NoRole)
         self.open_settings_action.triggered.connect(self.open_settings_dialog)
 
         # Create menu bar and add action
