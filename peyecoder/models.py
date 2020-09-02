@@ -614,8 +614,7 @@ class TrialOrder:
                     'Condition': row.get('Condition', '') or row.get('condition', ''),
                     'Used': row.get('Used', ''),
                     'Trial End': to_int(row.get('Trial End', 0) or row.get('TrEnd', 0)),
-                    'Critical Onset': to_int(row.get('Critical Onset', 0) or row.get('CritOnset', 0)),
-                    'Critical Offset': to_int(row.get('Critical Offset', 0) or row.get('CritOffset', 0))
+                    'Critical Onset': to_int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
                 }))
 
         self.data = data
