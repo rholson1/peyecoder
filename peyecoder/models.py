@@ -596,7 +596,7 @@ class TrialOrder:
         """ Read data from a trial order file"""
         data = []
 
-        with open(filename, 'r', newline='') as f:
+        with open(filename, 'r', newline='', encoding='latin-1') as f:
             dialect = csv.Sniffer().sniff(f.readline(), delimiters=',\t')
             f.seek(0)
             reader = csv.DictReader(f, dialect=dialect)
