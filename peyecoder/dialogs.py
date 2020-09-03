@@ -211,7 +211,12 @@ class SubjectDialog(QDialog):
         }
 
         self.parent().subject.update_from_dict(d)
-        self.parent().subject.dirty = True
+
+        # When the subject info dialog is first opened, sync_fields is called even if nothing has been entered by the
+        # user.  To avoid unnecessary prompts to save when nothing has been changed, only mark the record dirty if
+        # a datafile has been loaded.
+        if self.parent().filename:
+            self.parent().subject.dirty = True
         self.parent().update_info_panel()
         self.parent().update_log()
 
