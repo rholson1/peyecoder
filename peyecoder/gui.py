@@ -11,6 +11,7 @@ from PySide2.QtCore import QObject, QEvent
 
 import timecode
 import os
+from functools import partial
 
 from peyecoder.video_reader import BufferedVideoReader
 from peyecoder.audio_player import VideoAudioPlayer
@@ -413,15 +414,29 @@ class MainWindow(QtWidgets.QMainWindow):
         reliability_action.setStatusTip('Compare coding against another file')
         reliability_action.triggered.connect(self.open_reliability_datafile)
 
+        prescreen_action = QAction('Pre-Screen', self)
+        prescreen_action.setShortcut('Ctrl+Shift+P')
+        prescreen_action.triggered.connect(partial(self.tab_widget.setCurrentIndex, TAB_PRESCREEN))
+
+        code_action = QAction('Code', self)
+        code_action.setShortcut('Ctrl+Shift+C')
+        code_action.triggered.connect(partial(self.tab_widget.setCurrentIndex, TAB_CODE))
+
         next_step_action = QAction('Skip &forward', self)
         next_step_action.setShortcut(']')
-        next_step_action.setShortcutContext(Qt.WidgetShortcut)
-        next_step_action.triggered.connect(self.next_step)
+        next_step_action.setShortcutContext(Qt.WidgetShortcut)  # prevent menu item from intercepting this keypress
 
         prev_step_action = QAction('Skip &backward', self)
         prev_step_action.setShortcut('[')
         prev_step_action.setShortcutContext(Qt.WidgetShortcut)
-        prev_step_action.triggered.connect(self.prev_step)
+
+        increment_action = QAction('Increment Trial', self)
+        increment_action.setShortcut('+')
+        increment_action.setShortcutContext(Qt.WidgetShortcut)
+
+        decrement_action = QAction('Decrement Trial', self)
+        decrement_action.setShortcut('-')
+        decrement_action.setShortcutContext(Qt.WidgetShortcut)
 
         help_url_action = QAction('Online Help', self)
         help_url_action.triggered.connect(self.open_help_url)
@@ -476,14 +491,21 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(exit_action)
 
         edit_menu = menu_bar.addMenu('&Edit')
-        edit_menu.addAction(next_step_action)
-        edit_menu.addAction(prev_step_action)
-        edit_menu.addSeparator()
-        edit_menu.addAction(self.synchronize_action)
-        edit_menu.addSeparator()
         edit_menu.addAction(self.open_subject_action)
         edit_menu.addAction(self.open_occluders_action)
         edit_menu.addAction(self.open_settings_action)
+
+        controls_menu = menu_bar.addMenu('&Controls')
+        controls_menu.addAction(prescreen_action)
+        controls_menu.addAction(code_action)
+        controls_menu.addSeparator()
+        controls_menu.addAction(self.synchronize_action)
+        controls_menu.addSeparator()
+        controls_menu.addAction(next_step_action)
+        controls_menu.addAction(prev_step_action)
+        controls_menu.addSeparator()
+        controls_menu.addAction(increment_action)
+        controls_menu.addAction(decrement_action)
 
         help_menu = menu_bar.addMenu('&Help')
         help_menu.addAction(help_url_action)
