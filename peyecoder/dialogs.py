@@ -213,6 +213,7 @@ class SubjectDialog(QDialog):
         self.parent().subject.update_from_dict(d)
         self.parent().subject.dirty = True
         self.parent().update_info_panel()
+        self.parent().update_log()
 
     def update_from_dict(self, d):
         self.subject_box.setText(str(d.get('Number', '')))
