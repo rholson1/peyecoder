@@ -520,8 +520,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def show_about_box(self):
         QMessageBox.about(self, 'About peyecoder',
                           ('<center>peyecoder {}</center>'
-                           '<br/><br/>'
-                           'To cite, see <a href="https://doi.org/10.5281/zenodo.3939233">https://doi.org/10.5281/zenodo.3939233</a>'
+                           '<p>This work was supported in part by a core grant to the Waisman Center from the '
+                           'National Institute of Child Health and Human Development (U54 HD090256), and in '
+                           'part by a grant to Susan Ellis Weismer from the National Institute on Deafness '
+                           'and Other Communication Disorders (R01 DC017974).</p>'
+                           '<p>To cite, see <a href="https://doi.org/10.5281/zenodo.3939233">https://doi.org/10.5281/zenodo.3939233</a></p>'
                            ).format(version))
 
     def resynchronize(self):
