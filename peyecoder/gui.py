@@ -127,29 +127,32 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.reset_state()
 
-    def closeEvent(self, event):
+    def prompt_save(self):
+        proceed = True
         if self.subject.dirty:
             ret = QMessageBox.warning(self, 'Peyecoder', 'Do you want to save changes?',
                                       QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
                                       defaultButton=QMessageBox.Save)
             if ret == QMessageBox.Save:
                 # save and, if successful, close
-                if self.save_datafile():
-                    event.accept()
-                else:
-                    event.ignore()
-            elif ret == QMessageBox.Cancel:
-                # don't save or close
-                event.ignore()
+                proceed = self.save_datafile()
             else:
-                # close without saving
-                event.accept()
-        else:
-            # Saving is not required; close
+                proceed = ret != QMessageBox.Cancel
+
+        return proceed
+
+    def closeEvent(self, event):
+        if self.prompt_save():
             event.accept()
+        else:
+            event.ignore()
 
     def reset_state(self):
         """Initialize state or reset to initial state"""
+
+        if not self.prompt_save():
+            return
+
         self.subject = Subject(self)
         self.filename = ''
         self.setWindowTitle('peyecoder')
