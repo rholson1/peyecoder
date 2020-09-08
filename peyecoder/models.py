@@ -601,20 +601,23 @@ class TrialOrder:
             f.seek(0)
             reader = csv.DictReader(f, dialect=dialect)
 
+            # lower case of fieldnames to make case-insensitive
+            reader.fieldnames = [fieldname.lower() for fieldname in reader.fieldnames]
+
             for row in reader:
-                trial_number = int(row.get('Trial Number', 0) or row.get('trial number', 0))
+                trial_number = int(row.get('trial number', 0))
                 data.append(Trial({
-                    'Name': row.get('Name', ''),
+                    'Name': row.get('name', ''),
                     'Trial Number': trial_number,
-                    'Sound Stimulus': row.get('Sound Stimulus', ''),
-                    'Left Image': row.get('Left Image', ''),
-                    'Center Image': row.get('Center Image', ''),
-                    'Right Image': row.get('Right Image', ''),
-                    'Target Side': row.get('Target Side', '') or row.get('target side', ''),
-                    'Condition': row.get('Condition', '') or row.get('condition', ''),
-                    'Used': row.get('Used', ''),
-                    'Trial End': to_int(row.get('Trial End', 0) or row.get('TrEnd', 0)),
-                    'Critical Onset': to_int(row.get('Critical Onset', 0) or row.get('CritOnset', 0))
+                    'Sound Stimulus': row.get('sound stimulus', ''),
+                    'Left Image': row.get('left image', ''),
+                    'Center Image': row.get('center image', ''),
+                    'Right Image': row.get('right image', ''),
+                    'Target Side': row.get('target side', ''),
+                    'Condition': row.get('condition', ''),
+                    'Used': row.get('used', ''),
+                    'Trial End': to_int(row.get('trial end', 0) or row.get('trend', 0)),
+                    'Critical Onset': to_int(row.get('critical onset', 0) or row.get('critonset', 0))
                 }))
 
         self.data = data
