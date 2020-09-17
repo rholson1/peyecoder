@@ -54,11 +54,11 @@ def compute_accuracy(target, response):
             accuracy = 'N/A'
     else:
         # Nonstandard coding
-        if target == response:
+        if target.lower() == response.lower():
             accuracy = 1
-        elif response == 'away':
+        elif response.lower() == 'away':
             accuracy = '-'
-        elif response == 'off':
+        elif response.lower() == 'off':
             accuracy = '.'
         else:
             accuracy = 0
