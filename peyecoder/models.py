@@ -586,7 +586,7 @@ class TrialOrder:
         return ', '.join([str(s) for s in self.unused])
 
     def calc_unused(self):
-        self.unused = [d['Trial Number'] for d in self.data if d['Used'] == 'no']
+        self.unused = [d['Trial Number'] for d in self.data if d['Used'].lower() == 'no']
 
     def calc_max_trial(self):
         """Determine the highest-numbered trial in the trial order"""
