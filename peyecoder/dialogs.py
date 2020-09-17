@@ -2,7 +2,7 @@ from PySide2 import QtGui
 from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, \
     QHBoxLayout, QVBoxLayout, QGridLayout, QDialog, QFileDialog, \
     QRadioButton, QButtonGroup, QDialogButtonBox, QCheckBox, QPlainTextEdit, QFrame, \
-    QTableWidget, QHeaderView, QTableWidgetItem, QSizePolicy
+    QTableWidget, QHeaderView, QTableWidgetItem, QSizePolicy, QMessageBox
 
 from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator, QKeySequence
 from PySide2.QtCore import QRect, QRegExp, Signal
@@ -13,6 +13,7 @@ from urllib.request import url2pathname
 
 import timecode
 import os
+import re
 
 from peyecoder.models import Occluders, Subject
 from peyecoder.panels import LogTable
@@ -614,3 +615,63 @@ class ExportDialog(QDialog):
         else:
             self.reject()
 
+
+class ReplaceDialog(QDialog):
+    """Dialog for find/replace responses"""
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowTitle('Replace Response')
+        self.find_label = QLabel('Find:')
+        self.find_box = QLineEdit()
+        self.entire_checkbox = QCheckBox('Entire response')
+        self.case_checkbox = QCheckBox('Match case')
+        self.replace_label = QLabel('Replace:')
+        self.replace_box = QLineEdit()
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+
+        find_layout = QHBoxLayout()
+        find_layout.addWidget(self.find_label)
+        find_layout.addWidget(self.find_box)
+        check_layout = QHBoxLayout()
+        check_layout.addWidget(self.entire_checkbox)
+        check_layout.addWidget(self.case_checkbox)
+        replace_layout = QHBoxLayout()
+        replace_layout.addWidget(self.replace_label)
+        replace_layout.addWidget(self.replace_box)
+        layout = QVBoxLayout()
+        layout.addLayout(find_layout)
+        layout.addLayout(check_layout)
+        layout.addLayout(replace_layout)
+        layout.addWidget(self.button_box)
+        self.setLayout(layout)
+
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+    def accept(self):
+
+        f = self.find_box.text().strip()
+        r = self.replace_box.text().strip()
+        entire_match = self.entire_checkbox.isChecked()
+        case_match = self.case_checkbox.isChecked()
+
+        if f and r:
+            for event in self.parent().subject.events:
+                if case_match:
+                    if entire_match:
+                        if event.response == f:
+                            event.response = r
+                    else:
+                        if f in event.response:
+                            event.response = event.response.replace(f, r)
+                else:
+                    if entire_match:
+                        if event.response.lower == f.lower():
+                            event.response = r
+                    else:
+                        # Use regex for case-insensitive replacement
+                        event.response = re.sub(re.escape(f), r, event.response, flags=re.IGNORECASE)
+            self.parent().update_log()
+            super().accept()
+        else:
+            QMessageBox.warning(self, 'peyecoder', 'Both "find" and "replace" fields must contain text.', QMessageBox.Ok)

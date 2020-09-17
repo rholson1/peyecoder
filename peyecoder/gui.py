@@ -19,7 +19,7 @@ from peyecoder.panels import Prescreen, Code, LogTable
 from peyecoder.models import Subject
 from peyecoder.file_utils import load_datafile, save_datafile
 from peyecoder.dialogs import SubjectDialog, TimecodeDialog, OccluderDialog, SettingsDialog, CodeComparisonDialog, \
-    ReportDialog, ExportDialog, get_save_filename
+    ReportDialog, ExportDialog, get_save_filename, ReplaceDialog
 from peyecoder.reliability import reliability_report
 from peyecoder import version
 
@@ -60,6 +60,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_dialog = None
         self.code_comparison_dialog = None
         self.report_dialog = None
+        self.replace_dialog = None
 
         self.subject = Subject(self)
 
@@ -483,6 +484,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.open_settings_action.setMenuRole(QAction.NoRole)
         self.open_settings_action.triggered.connect(self.open_settings_dialog)
 
+        self.open_replace_action = QAction('&Replace Responses', self)
+        self.open_replace_action.setStatusTip('Find/Replace Responses')
+        self.open_replace_action.triggered.connect(self.open_replace_dialog)
+
         # Create menu bar and add action
         menu_bar = self.menuBar()
         file_menu = menu_bar.addMenu('&File')
@@ -501,6 +506,7 @@ class MainWindow(QtWidgets.QMainWindow):
         edit_menu.addAction(self.open_subject_action)
         edit_menu.addAction(self.open_occluders_action)
         edit_menu.addAction(self.open_settings_action)
+        edit_menu.addAction(self.open_replace_action)
 
         controls_menu = menu_bar.addMenu('&Controls')
         controls_menu.addAction(prescreen_action)
@@ -635,6 +641,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.settings_dialog:
             self.settings_dialog = SettingsDialog(self)
         self.settings_dialog.show()
+
+    def open_replace_dialog(self):
+        if not self.replace_dialog:
+            self.replace_dialog = ReplaceDialog(self)
+        self.replace_dialog.show()
 
     def enable_controls(self):
         self.play_button.setEnabled(True)
