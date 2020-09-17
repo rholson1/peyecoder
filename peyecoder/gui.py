@@ -878,7 +878,10 @@ class MainWindow(QtWidgets.QMainWindow):
         except:
             QMessageBox.warning(self, 'peyecoder', ('Unable to seek to the requested position in the audio.'
                                                     ' This likely means that an incorrect timecode was entered '
-                                                    'when the video was opened.'), QMessageBox.Ok)
+                                                    'when the video was opened.  Reload video and enter correct '
+                                                    'starting timestamp.'), QMessageBox.Ok)
+            self.subject.events.reset_offset()
+
         self.update_timecode()
         self.show_frame()
 

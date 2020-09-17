@@ -326,6 +326,7 @@ class EventsA:
 class Events:
     def __init__(self, events=None):
         self.events = SortedList(events)
+        self.removed_offset = 0
 
     def add_event(self, event):
         self.events.add(event)
@@ -391,10 +392,18 @@ class Events:
 
     def remove_offset(self, offset):
         """Remove offset from any events having has_offset == True"""
+        self.removed_offset = offset  # to allow undo
         for event in self.events:
             if event.has_offset:
                 event.frame -= offset
                 event.has_offset = False
+
+    def reset_offset(self):
+        """Mark events as having offset to allow recovery from state where the initial timecode was entered incorrectly"""
+        for event in self.events:
+            event.has_offset = True
+            event.frame += self.removed_offset
+        self.removed_offset = 0
 
     def error_items(self, unused_trials, max_trial):
         """ Check for errors and return a list of row numbers (which should be highlighted) and
