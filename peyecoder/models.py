@@ -547,11 +547,22 @@ class Trial(dict):
     """Subclass of dict used to represent a row of the TrialOrder table"""
     def inverted_target(self):
         """Swap left and right target side to account for difference between participant and camera perspective"""
+        subs = {'Right': 'Left', 'Left': 'Right',
+                'right': 'left', 'left': 'right',
+                'RIGHT': 'LEFT', 'LEFT': 'RIGHT'}
+
         try:
+            # Standard coding
             if self['Target Side'] in ('R', 'L'):
                 return {'R': 'L', 'L': 'R'}[self['Target Side']]
-            else:
-                return self['Target Side']
+
+            # Nonstandard coding
+            for key in subs.keys():
+                if key in self['Target Side']:
+                    return self['Target Side'].replace(key, subs[key])
+
+            # Not invertible
+            return self['Target Side']
         except KeyError:
             return 'No target to invert'
 
