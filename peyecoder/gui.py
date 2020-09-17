@@ -450,6 +450,7 @@ class MainWindow(QtWidgets.QMainWindow):
         about_box_action.triggered.connect(self.show_about_box)
 
         export_action = QAction('E&xport CSV', self)
+        export_action.setShortcut('Ctrl+e')
         export_action.setStatusTip('Export CSV')
         export_action.triggered.connect(self.export_csv)
 
@@ -472,10 +473,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.open_subject_action.triggered.connect(self.open_subject_dialog)
 
         self.open_occluders_action = QAction('&Occluders', self)
+        self.open_occluders_action.setShortcut('Ctrl+b')
         self.open_occluders_action.setStatusTip('Open Occluder Window')
         self.open_occluders_action.triggered.connect(self.open_occluder_dialog)
 
         self.open_settings_action = QAction('&Settings', self)
+        self.open_settings_action.setShortcut('Ctrl+,')
         self.open_settings_action.setStatusTip('Open Settings Window')
         self.open_settings_action.setMenuRole(QAction.NoRole)
         self.open_settings_action.triggered.connect(self.open_settings_dialog)
