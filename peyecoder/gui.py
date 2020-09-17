@@ -180,6 +180,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_dialog = None
         self.code_comparison_dialog = None
 
+        # reset coding controls
+        self.prescreen_tab.trial_box.setValue(1)
+        self.code_tab.trial_box.setValue(1)
+
         self.update_log()
         self.reset_info_panel()
 
