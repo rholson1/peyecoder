@@ -588,9 +588,11 @@ class MainWindow(QtWidgets.QMainWindow):
         elif e.key() in (Qt.Key_Delete, Qt.Key_Backspace):
             # The order of operations is important here
             selected_rows = self.logtable.selected_rows()
+            next_row = max(selected_rows) - len(selected_rows) + 1  # identify the row after the last row to be deleted
             self.logtable.delete_selected()
             self.delete_data_rows(selected_rows)
             self.update_log()  # necessary only to update row highlighting if error status has changed
+            self.logtable.select_rows([next_row])  # highlight the row after the last deleted row
             self.update_info_panel()
         elif e.key() == self.subject.settings.get('Toggle Trial Status Key', None):
             # toggle between 0 and 1
