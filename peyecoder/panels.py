@@ -213,6 +213,7 @@ class LogTable(QTableWidget):
                 self.data.pop(row)
                 self.removeRow(row)
                 deleted_rows.append(row)
+        self.repaint()
         return deleted_rows
 
     def increment_selected(self):
