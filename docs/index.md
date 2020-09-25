@@ -40,12 +40,12 @@ set the CFBundleDisplayName and CFBundleName as below so that the application me
 app = BUNDLE(exe,
      name='peyecoder.app',
      icon=None,
-     bundle_identifier=None
+     bundle_identifier=None,
      info_plist={
         'CFBundleDisplayName': 'peyecoder',
         'CFBundleName': 'peyecoder',
         'NSHighResolutionCapable': 'True'
-        },
+        }
      )
 ``` 
 see the [PyInstaller docs](https://pyinstaller.readthedocs.io/en/stable/spec-files.html#spec-file-options-for-a-mac-os-x-bundle)
