@@ -179,6 +179,7 @@ class LogTable(QTableWidget):
         """ Append an entry to the table data and to the table"""
         self.data.append(entry)
         self._add_row(entry)
+        self.repaint()
 
     def _add_row(self, entry):
         # Add a row to the table, given an iterable
