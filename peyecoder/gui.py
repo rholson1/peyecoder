@@ -443,6 +443,14 @@ class MainWindow(QtWidgets.QMainWindow):
         decrement_action.setShortcut('-')
         decrement_action.setShortcutContext(Qt.WidgetShortcut)
 
+        increment_selected_action = QAction('Increment Selected Trials', self)
+        increment_selected_action.setShortcut('Alt++')
+        increment_selected_action.setShortcutContext(Qt.WidgetShortcut)
+
+        decrement_selected_action = QAction('Decrement Selected Trials', self)
+        decrement_selected_action.setShortcut('Alt+-')
+        decrement_selected_action.setShortcutContext(Qt.WidgetShortcut)
+
         help_url_action = QAction('Online Help', self)
         help_url_action.triggered.connect(self.open_help_url)
 
@@ -519,6 +527,8 @@ class MainWindow(QtWidgets.QMainWindow):
         controls_menu.addSeparator()
         controls_menu.addAction(increment_action)
         controls_menu.addAction(decrement_action)
+        controls_menu.addAction(increment_selected_action)
+        controls_menu.addAction(decrement_selected_action)
 
         help_menu = menu_bar.addMenu('&Help')
         help_menu.addAction(help_url_action)
@@ -571,13 +581,15 @@ class MainWindow(QtWidgets.QMainWindow):
         elif e.key() == Qt.Key_Space:
             self.toggle_state()
         elif e.key() in (Qt.Key_Plus, Qt.Key_Equal):
-            if self.logtable.has_selection():
-                self.change_selected_trials(1)
+            if e.modifiers() & Qt.AltModifier:
+                if self.logtable.has_selection():
+                    self.change_selected_trials(1)
             else:
                 self.change_trial(1)
         elif e.key() == Qt.Key_Minus:
-            if self.logtable.has_selection():
-                self.change_selected_trials(-1)
+            if e.modifiers() & Qt.AltModifier:
+                if self.logtable.has_selection():
+                    self.change_selected_trials(-1)
             else:
                 self.change_trial(-1)
         elif e.key() in (Qt.Key_Enter, Qt.Key_Return):
