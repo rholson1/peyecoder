@@ -238,8 +238,8 @@ class Reasons:
         return [v.trial for v in self.ps[0].values() if not v._include]
 
     def unused_reasons(self):
-        """Dictionary linking trials to reasons for exclusion"""
-        return {v.trial: v.reason for v in self.ps[0].values() if not v._include}
+        """Dictionary linking trials to reasons for screening"""
+        return {v.trial: v.reason for v in self.ps[0].values()}
 
     def get_unused_display(self):
         return ', '.join([str(s) for s in self.unused()])

@@ -105,8 +105,14 @@ def export_long(filename, s: Subject, invert_rl):
         }
 
         trial_events = s.events.trials()
+        unused = s.trial_order.unused + s.reasons.unused()
+        prescreen_reasons = s.reasons.unused_reasons()
+
         for trial_info in s.trial_order.data:
             trial_number = trial_info['Trial Number']
+            if trial_number in unused:
+                continue
+
             critical_onset_rounded = frame2ms(ms2frames(trial_info['Critical Onset'], frame_rate), frame_rate)
             events = trial_events.get(trial_number, [])
 
@@ -125,7 +131,8 @@ def export_long(filename, s: Subject, invert_rl):
                 'Center Image': trial_info.get('Center Image', ''),
                 'Right Image': r_image,
                 'Target Side': target_side,
-                'Condition': trial_info.get('Condition', '')
+                'Condition': trial_info.get('Condition', ''),
+                'Prescreen Notes': prescreen_reasons.get(trial_number, '')
             })
 
             trial_frames = int(trial_info.get('Trial End', 0) / 100 * 3)
@@ -194,7 +201,7 @@ def export_wide(filename, s: Subject, invert_rl):
         writer.writeheader()
 
         trial_events = s.events.trials()
-        unused = s.trial_order.unused
+        unused = s.trial_order.unused + s.reasons.unused()
         prescreen_reasons = s.reasons.unused_reasons()
         for trial_info in s.trial_order.data:
             trial_number = trial_info['Trial Number']
