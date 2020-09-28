@@ -15,7 +15,7 @@ class Prescreen(QWidget):
         'Child Talking',
         'Parent Talking',
         'Parent Interference',
-        'Child Not Looking Before Sound Offset',
+        'Child Not Looking Before Sound',
         'Equipment Malfunction',
         'Experiment Ended Early',
         'Other'
