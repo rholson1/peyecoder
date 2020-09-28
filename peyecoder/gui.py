@@ -592,7 +592,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.logtable.delete_selected()
             self.delete_data_rows(selected_rows)
             self.update_log()  # necessary only to update row highlighting if error status has changed
+
+            # Disconnect self.select_code_row before highlighting next row -- don't want to change position in video
+            self.logtable.itemSelectionChanged.disconnect(self.select_code_row)
             self.logtable.select_rows([next_row])  # highlight the row after the last deleted row
+            self.logtable.itemSelectionChanged.connect(self.select_code_row)
             self.update_info_panel()
         elif e.key() == self.subject.settings.get('Toggle Trial Status Key', None):
             # toggle between 0 and 1
