@@ -212,6 +212,27 @@ class Reasons:
                 data.append([t, p1.include, p1.reason, p2.include, p2.reason])
         return data
 
+    def error_items(self, ps=0):
+        """Check for discrepencies between prescreener 1 and prescreener 2, and return a list of row numbers
+        for rows that should be highlighted.  No need for error messages.
+        :param ps: Prescreener number (1 or 2) or 0 (default) for both
+        """
+        assert ps in (0, 1, 2)
+
+        error_rows = []
+        error_trials = []
+        if all(self.ps):  # Entries exist for both prescreeners
+            trials = list(set(self.ps[0]).union(self.ps[1]))
+            for i, t in enumerate(trials):
+                p1 = self.ps[0].get(t, Reason(t, None, ''))
+                p2 = self.ps[1].get(t, Reason(t, None, ''))
+                if p1.include != p2.include or p1.reason != p2.reason:
+                    error_rows.append(i)
+                    error_trials.append(t)
+        if ps in (1, 2):
+            error_rows = [i for i, t in enumerate(self.ps[ps - 1]) if t in error_trials]
+        return error_rows, error_trials
+
     def unused(self):
         """List of trials prescreened out by prescreener 1"""
         return [v.trial for v in self.ps[0].values() if not v._include]

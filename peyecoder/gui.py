@@ -323,6 +323,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.active_tab == TAB_PRESCREEN:
             self.logtable.set_prescreen_labels(self.prescreen_tab.prescreener())
             self.logtable.load_data(self.subject.reasons.render(self.prescreen_tab.prescreener()))
+            error_rows, error_trials = self.subject.reasons.error_items(self.prescreen_tab.prescreener())
+            self.logtable.redden_rows(error_rows)
+            if error_trials:
+                self.message_box.setText('Mismatch between prescreener 1 and prescreener 2 for trials {}'.format(error_trials))
+            else:
+                self.message_box.setText('')
         elif self.active_tab == TAB_CODE:
             self.logtable.set_code_labels()
             self.logtable.load_data(self.subject.events.render(self.subject.timecode_offsets, self.timecode))
