@@ -245,16 +245,10 @@ class LogTable(QTableWidget):
 
     def select_rows(self, rows):
         """Select rows in the table specified as keys in a dictionary"""
-        first = True
-        firstrow = 0
         for r in rows:
-            if first:
-                firstrow = r
             for c in range(self.columnCount()):
                 if self.item(r, c):
                     self.item(r, c).setSelected(True)
-
-        self.setCurrentIndex(self.indexFromItem(self.item(firstrow, 0)))
 
     def set_code_labels(self):
         self.set_labels(self.Labels.Code)

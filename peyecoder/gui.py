@@ -642,12 +642,8 @@ class MainWindow(QtWidgets.QMainWindow):
         elif self.active_tab == TAB_CODE:
             for r in rows:
                 self.subject.events.change_trial(r, delta)
-        self.update_log()
+        self.update_log(preserve_highlight=True)
         self.update_info_panel()
-
-        self.logtable.itemSelectionChanged.disconnect(self.select_code_row)
-        self.logtable.select_rows(rows)
-        self.logtable.itemSelectionChanged.connect(self.select_code_row)
 
     def change_trial(self, delta):
         if self.active_tab == TAB_PRESCREEN:
