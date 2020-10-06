@@ -251,7 +251,8 @@ class LogTable(QTableWidget):
             if first:
                 firstrow = r
             for c in range(self.columnCount()):
-                self.item(r, c).setSelected(True)
+                if self.item(r, c):
+                    self.item(r, c).setSelected(True)
 
         self.setCurrentIndex(self.indexFromItem(self.item(firstrow, 0)))
 
