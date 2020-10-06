@@ -642,7 +642,7 @@ class MainWindow(QtWidgets.QMainWindow):
         elif self.active_tab == TAB_CODE:
             for r in rows:
                 self.subject.events.change_trial(r, delta)
-        self.update_log()
+        self.update_log(preserve_highlight=True)
         self.update_info_panel()
 
     def change_trial(self, delta):
