@@ -44,7 +44,7 @@ class MainEventFilter(QObject):
 
 class MainWindow(QtWidgets.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, argv):
         super().__init__()
 
         self.setFocusPolicy(Qt.ClickFocus)
@@ -128,6 +128,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.build_menu()
 
         self.reset_state()
+
+        # If a filename has been passed as a command line argument, try to open it
+        if len(argv) > 1:
+            if os.path.isfile(argv[1]):
+                self.open_data_file(argv[1])
 
     def prompt_save(self):
         proceed = True
@@ -787,6 +792,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_datafile(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Data File", filter="Data Files (*.vcx)") #, QtCore.QDir.homePath())
+        self.open_data_file(filename)
+
+    def open_data_file(self, filename):
         if filename != '':
             self.reset_state()
             self.subject.from_plist(load_datafile(filename))
@@ -929,10 +937,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.show_frame()  # update (and resize) the display of the current frame
 
 
-def run():
+def run(argv):
     """Run peyecoder application"""
     app = QtWidgets.QApplication([])
-    widget = MainWindow()
+    widget = MainWindow(argv)
     widget.resize(800, 600)
     widget.show()
     return app.exec_()
