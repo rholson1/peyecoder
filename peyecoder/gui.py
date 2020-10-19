@@ -790,6 +790,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.message_box.setText(e.strerror)
             self.enable_controls()
 
+            # may need to re-render timestamps of existing events if video framerate is not 30 fps
+            self.update_log()
+
     def open_datafile(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Data File", filter="Data Files (*.vcx)") #, QtCore.QDir.homePath())
         self.open_data_file(filename)
