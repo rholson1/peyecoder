@@ -478,9 +478,10 @@ class Events:
         # 5. last event in a trial should have status 'off'
         last_rows = accumulate([len(events) for t, events in self.trials().items()])
         error_rows = [r - 1 for r in last_rows if self.events[r-1].status == 'on']
+        error_trials = [self.events[r].trial for r in error_rows]
         if error_rows:
             all_error_rows += error_rows
-            msg.append('The last event in a trial should have status "off"')
+            msg.append('The last event in trial # {} should have status "off"'.format(error_trials))
 
         # 6. must not have 2 consecutive events with trial status 'off'
         error_rows = []
