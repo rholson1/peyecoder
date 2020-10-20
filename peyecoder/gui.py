@@ -804,6 +804,10 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.vid:
                 self.subject.events.remove_offset(self.subject.timecode_offsets.get_offset(0))
 
+            # update timecode so stored framerate used to render timecodes (if a video is not loaded)
+            self.timecode = timecode.Timecode(self.subject['Framerate'])
+            self.timecode.drop_frame = False
+
             self.update_log()
             self.update_info_panel()
             if self.subject_dialog:
