@@ -498,10 +498,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.open_occluders_action.triggered.connect(self.open_occluder_dialog)
 
         self.open_settings_action = QAction('&Settings', self)
-        if sys.platform == 'darwin':
-            self.open_settings_action.setShortcut(QtGui.QKeySequence.Preferences)
-        else:
-            self.open_settings_action.setShortcut('Ctrl+,')
+        self.open_settings_action.setShortcut('Ctrl+,')
         self.open_settings_action.setStatusTip('Open Settings Window')
         self.open_settings_action.setMenuRole(QAction.NoRole)
         self.open_settings_action.triggered.connect(self.open_settings_dialog)
