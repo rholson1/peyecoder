@@ -441,26 +441,32 @@ class MainWindow(QtWidgets.QMainWindow):
         next_step_action = QAction('Skip &forward', self)
         next_step_action.setShortcut(']')
         next_step_action.setShortcutContext(Qt.WidgetShortcut)  # prevent menu item from intercepting this keypress
+        next_step_action.triggered.connect(self.next_step)
 
         prev_step_action = QAction('Skip &backward', self)
         prev_step_action.setShortcut('[')
         prev_step_action.setShortcutContext(Qt.WidgetShortcut)
+        prev_step_action.triggered.connect(self.prev_step)
 
         increment_action = QAction('Increment Trial', self)
         increment_action.setShortcut('+')
         increment_action.setShortcutContext(Qt.WidgetShortcut)
+        increment_action.triggered.connect(partial(self.change_trial, 1))
 
         decrement_action = QAction('Decrement Trial', self)
         decrement_action.setShortcut('-')
         decrement_action.setShortcutContext(Qt.WidgetShortcut)
+        decrement_action.triggered.connect(partial(self.change_trial, -1))
 
         increment_selected_action = QAction('Increment Selected Trials', self)
         increment_selected_action.setShortcut('Alt++')
         increment_selected_action.setShortcutContext(Qt.WidgetShortcut)
+        increment_selected_action.triggered.connect(partial(self.change_selected_trials, 1))
 
         decrement_selected_action = QAction('Decrement Selected Trials', self)
         decrement_selected_action.setShortcut('Alt+-')
         decrement_selected_action.setShortcutContext(Qt.WidgetShortcut)
+        decrement_selected_action.triggered.connect(partial(self.change_selected_trials, -1))
 
         help_url_action = QAction('Online Help', self)
         help_url_action.triggered.connect(self.open_help_url)
