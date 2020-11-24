@@ -7,7 +7,7 @@ from PySide2.QtWidgets import QLabel, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
     QTabWidget, QSplitter, QScrollArea, QMessageBox
 from PySide2.QtGui import Qt
-from PySide2.QtCore import QObject, QEvent
+from PySide2.QtCore import QObject, QEvent, Signal
 
 import timecode
 import os
@@ -28,6 +28,21 @@ STATE_PAUSED = 2
 
 TAB_PRESCREEN = 0
 TAB_CODE = 1
+
+
+class JumpSlider(QSlider):
+    """ This subclass of QSlider supports jumping to a position on the slider by clicking on it (while continuing to
+    allow dragging the slider).  Clicking on the slider results in the firing of a new signal 'clicked'.
+    Inspired by https://stackoverflow.com/questions/11132597/qslider-mouse-direct-jump
+    """
+    clicked = Signal(int)
+
+    def mousePressEvent(self, ev):
+        """ Jump to click position """
+        v = QStyle.sliderValueFromPosition(self.minimum(), self.maximum(), ev.x(), self.width())
+        self.setValue(v)
+        super().mousePressEvent(ev)
+        self.clicked.emit(v)
 
 
 class MainEventFilter(QObject):
@@ -208,9 +223,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.mute_button.clicked.connect(self.toggle_mute)
         self.mute_button.setFocusPolicy(Qt.NoFocus)
 
-        self.position_slider = QSlider(QtCore.Qt.Horizontal)
+        self.position_slider = JumpSlider(QtCore.Qt.Horizontal)
         self.position_slider.setRange(0, 0)
         self.position_slider.sliderMoved.connect(self.setPosition)
+        self.position_slider.clicked.connect(self.setPosition)
         self.position_slider.setFocusPolicy(Qt.NoFocus)
 
         control_layout = QHBoxLayout()
