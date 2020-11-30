@@ -329,7 +329,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tab_widget.currentChanged.connect(self.change_tab)
         self.tab_widget.setFocusPolicy(Qt.NoFocus)
 
-        self.active_tab = TAB_PRESCREEN
+        self.tab_widget.setCurrentIndex(TAB_CODE)
 
         return self.tab_widget
 
