@@ -16,8 +16,8 @@ from functools import partial
 from peyecoder.video_reader import BufferedVideoReader
 from peyecoder.audio_player import VideoAudioPlayer
 from peyecoder.panels import Prescreen, Code, LogTable
-from peyecoder.models import Subject
-from peyecoder.file_utils import load_datafile, save_datafile
+from peyecoder.models import Subject, Occluders
+from peyecoder.file_utils import load_datafile, save_datafile, intify_keys
 from peyecoder.dialogs import SubjectDialog, TimecodeDialog, OccluderDialog, SettingsDialog, CodeComparisonDialog, \
     ReportDialog, ExportDialog, get_save_filename, ReplaceDialog
 from peyecoder.reliability import reliability_report
@@ -169,6 +169,24 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
+    def load_defaults(self):
+        """Load default.vcx if present in working directory."""
+        filename = os.path.join(os.getcwd(), 'default.vcx')
+        if os.path.isfile(filename):
+            data = load_datafile(filename)
+            d = data['Subject']
+
+            if 'Occluders' in d:
+                self.subject.occluders = Occluders.from_dictlist(d['Occluders'])
+            if 'Settings' in d:
+                if 'Response Keys' in d['Settings']:
+                    d['Settings']['Response Keys'] = intify_keys(d['Settings']['Response Keys'])
+                self.subject.settings.update(d['Settings'])
+
+            self.message_box.setText('Loaded settings from {}'.format(filename))
+        else:
+            self.message_box.setText('No settings file detected: {}'.format(filename))
+
     def reset_state(self):
         """Initialize state or reset to initial state"""
 
@@ -204,9 +222,11 @@ class MainWindow(QtWidgets.QMainWindow):
         # reset coding controls
         self.prescreen_tab.trial_box.setValue(1)
         self.code_tab.trial_box.setValue(1)
+        self.tab_widget.setCurrentIndex(TAB_CODE)  # setting the current tab also updates the log table
 
-        self.update_log()
         self.reset_info_panel()
+
+        self.load_defaults()
 
         self.open_subject_dialog()
 
@@ -329,8 +349,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.tab_widget.currentChanged.connect(self.change_tab)
         self.tab_widget.setFocusPolicy(Qt.NoFocus)
 
-        self.tab_widget.setCurrentIndex(TAB_CODE)
-
         return self.tab_widget
 
     def change_tab(self, index):
@@ -345,8 +363,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.logtable.set_prescreen_labels(self.prescreen_tab.prescreener())
             self.logtable.load_data(self.subject.reasons.render(self.prescreen_tab.prescreener()))
             error_rows, error_trials = self.subject.reasons.error_items(self.prescreen_tab.prescreener())
-            self.logtable.redden_rows(error_rows)
-            if error_trials:
+            # Only display error messages and redden rows if "display both coders" is checked
+            if error_trials and (self.prescreen_tab.prescreener() == 0):
+                self.logtable.redden_rows(error_rows)
                 self.message_box.setText('Mismatch between prescreener 1 and prescreener 2 for trials {}'.format(error_trials))
             else:
                 self.message_box.setText('')
