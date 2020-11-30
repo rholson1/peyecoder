@@ -498,6 +498,7 @@ class SettingsDialog(QDialog):
         self.load_settings()
 
     def accept(self):
+        self.button_box.setFocus()  # in case a cell is in edit mode
         self.save_settings()
         super().accept()
 
