@@ -5,8 +5,9 @@ Peyecoder is used for coding eye movements in looking-while-listening experiment
 as a replacement for the now-outdated program iCoder developed at Stanford in the early 2000s.
 
 ## User Manual
-The User Manual can be downloaded as a .pdf [User Manual](peyecoder_manual.pdf), and the source document can also be
-viewed as a Google Doc [User Manual](https://docs.google.com/document/d/11h8SEbnTbIGASwGvcTWMhHi2Ab65fE-V2alm2vINrw8/edit?usp=sharing)
+The User Manual can be downloaded as a pdf or viewed as a Google Doc:
+- [User Manual](peyecoder_manual.pdf)(pdf)
+- [User Manual](https://docs.google.com/document/d/11h8SEbnTbIGASwGvcTWMhHi2Ab65fE-V2alm2vINrw8/edit?usp=sharing)(Google Doc)
 
 ### Additional Materials
  - Sample video, trial orders, and coded files [Coding example](Coding.zip)
