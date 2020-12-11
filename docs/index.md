@@ -4,6 +4,10 @@
 Peyecoder is used for coding eye movements in looking-while-listening experiments.  It was designed
 as a replacement for the now-outdated program iCoder developed at Stanford in the early 2000s.
 
+## User Manual
+The User Manual can be downloaded as a .pdf [User Manual](peyecoder_manual.pdf), and the source document can also be
+viewed as a Google Doc [User Manual](https://docs.google.com/document/d/11h8SEbnTbIGASwGvcTWMhHi2Ab65fE-V2alm2vINrw8/edit?usp=sharing)
+
 ## Installing peyecoder
 There are three ways to obtain peyecoder.
 - Download an executable version of the program attached to a [GitHub Release](https://github.com/rholson1/peyecoder/releases/).
