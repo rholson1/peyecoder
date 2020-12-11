@@ -8,6 +8,10 @@ as a replacement for the now-outdated program iCoder developed at Stanford in th
 The User Manual can be downloaded as a .pdf [User Manual](peyecoder_manual.pdf), and the source document can also be
 viewed as a Google Doc [User Manual](https://docs.google.com/document/d/11h8SEbnTbIGASwGvcTWMhHi2Ab65fE-V2alm2vINrw8/edit?usp=sharing)
 
+### Additional Materials
+ - Sample video, trial orders, and coded files [Coding example](Coding.zip)
+ - Exported data from peyecoder and Tobii X2-60 eyetracker, and R scripts [Data processing](Data.zip) 
+
 ## Installing peyecoder
 There are three ways to obtain peyecoder.
 - Download an executable version of the program attached to a [GitHub Release](https://github.com/rholson1/peyecoder/releases/).
