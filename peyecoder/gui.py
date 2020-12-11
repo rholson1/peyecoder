@@ -183,9 +183,9 @@ class MainWindow(QtWidgets.QMainWindow):
                     d['Settings']['Response Keys'] = intify_keys(d['Settings']['Response Keys'])
                 self.subject.settings.update(d['Settings'])
 
-            self.message_box.setText('Loaded settings from {}'.format(filename))
+            print('Loaded settings from {}'.format(filename))
         else:
-            self.message_box.setText('No settings file detected: {}'.format(filename))
+            print('No settings file detected: {}'.format(filename))
 
     def reset_state(self):
         """Initialize state or reset to initial state"""
