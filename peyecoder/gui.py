@@ -11,6 +11,7 @@ from PySide2.QtCore import QObject, QEvent, Signal
 
 import timecode
 import os
+import sys
 from functools import partial
 
 from peyecoder.video_reader import BufferedVideoReader
@@ -171,7 +172,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def load_defaults(self):
         """Load default.vcx if present in working directory."""
-        filename = os.path.join(os.getcwd(), 'default.vcx')
+        if getattr(sys, 'frozen', False):
+            # running in a bundle
+            defaultdir = os.path.dirname(sys.executable)
+        else:
+            defaultdir = os.getcwd()
+
+        filename = os.path.join(defaultdir, 'default.vcx')
         if os.path.isfile(filename):
             data = load_datafile(filename)
             d = data['Subject']
