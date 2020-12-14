@@ -1,5 +1,5 @@
 # peyecoder
-Software for coding eye movements in looking-while-listening tasks.
+An open-source program for coding eye movements.
 
 Running
 --
@@ -27,7 +27,6 @@ additionally, **ffmpeg** should be installed and in the path.
 
 Citing Peyecoder
 --
-[TBD]
+Olson, R. H., Pomper, R., Potter, C. E., Hay, J. F., Saffran, J. R., Ellis Weismer, S., & Lew-Williams, C. (2020). Peyecoder: An open-source program for coding eye movements. Zenodo. http://doi.org/10.5281/zenodo.4313832
 
-The DOI for the latest release is 
 [![DOI](https://zenodo.org/badge/242180640.svg)](https://zenodo.org/badge/latestdoi/242180640)
