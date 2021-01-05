@@ -769,7 +769,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         frame = self.vid.frame
         h, w, d = frame.shape
-        image = QtGui.QImage(frame.data, w, h, QtGui.QImage.Format_RGB888)
+        bytes_per_line = w * d
+        image = QtGui.QImage(frame.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
 
         # Draw occluders in image
         painter = QtGui.QPainter(image)
