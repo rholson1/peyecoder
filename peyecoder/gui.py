@@ -603,9 +603,10 @@ class MainWindow(QtWidgets.QMainWindow):
         QMessageBox.about(self, 'About peyecoder',
                           ('<center>peyecoder {}</center>'
                            '<p>This work was supported in part by a core grant to the Waisman Center from the '
-                           'National Institute of Child Health and Human Development (U54 HD090256), and in '
+                           'National Institute of Child Health and Human Development (U54 HD090256), in '
                            'part by a grant to Susan Ellis Weismer from the National Institute on Deafness '
-                           'and Other Communication Disorders (R01 DC017974).</p>'
+                           'and Other Communication Disorders (R01 DC017974), and in part by a grant to '
+                           'Casey Lew-Williams from the National Institute of Child Health and Human Development (R01 HD095912).</p>'
                            '<p>To cite, see <a href="https://doi.org/10.5281/zenodo.3939233">https://doi.org/10.5281/zenodo.3939233</a></p>'
                            ).format(version))
 
