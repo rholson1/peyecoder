@@ -1,0 +1,38 @@
+{
+    "license": "MIT",
+    "title": "Peyecoder: An open-source program for coding eye movements",
+    "notes": "This work was supported in part by a core grant to the Waisman Center from the National Institute of Child Health and Human Development (U54 HD090256), a grant to Susan Ellis Weismer from the National Institute on Deafness and Other Communication Disorders (R01 DC017974), and a grant to Casey Lew-Williams from the National Institute of Child Health and Human Development (R01 HD095912).",
+
+    "upload_type": "software",
+    "creators": [
+        {
+            "affiliation": "University of Wisconsin - Madison",
+            "name": "Olson, R. H."
+        },
+        {
+            "affiliation": "Boys Town National Research Hospital",
+            "name": "Pomper, R."
+        },
+        {
+            "affiliation": "Princeton University",
+            "name": "Potter, C. E."
+        },
+        {
+            "affiliation": "University of Tennessee - Knoxville",
+            "name": "Hay, J. F."
+        },
+        {
+            "affiliation": "University of Wisconsin - Madison",
+            "name": "Saffran, J. R."
+        },
+        {
+            "affiliation": "University of Wisconsin - Madison",
+            "name": "Ellis Weismer, S."
+        },
+        {
+            "affiliation": "Princeton University",
+            "name": "Lew-Williams, C."
+        }
+    ],
+    "access_right": "open"
+}
