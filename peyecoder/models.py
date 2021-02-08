@@ -647,20 +647,21 @@ class TrialOrder:
             reader.fieldnames = [fieldname.lower() for fieldname in reader.fieldnames]
 
             for row in reader:
-                trial_number = int(row.get('trial number', 0))
-                data.append(Trial({
-                    'Name': row.get('name', ''),
-                    'Trial Number': trial_number,
-                    'Sound Stimulus': row.get('sound stimulus', ''),
-                    'Left Image': row.get('left image', ''),
-                    'Center Image': row.get('center image', ''),
-                    'Right Image': row.get('right image', ''),
-                    'Target Side': row.get('target side', ''),
-                    'Condition': row.get('condition', ''),
-                    'Used': row.get('used', ''),
-                    'Trial End': to_int(row.get('trial end', 0) or row.get('trend', 0)),
-                    'Critical Onset': to_int(row.get('critical onset', 0) or row.get('critonset', 0))
-                }))
+                trial_number = to_int(row.get('trial number', 0))
+                if trial_number:
+                    data.append(Trial({
+                        'Name': row.get('name', ''),
+                        'Trial Number': trial_number,
+                        'Sound Stimulus': row.get('sound stimulus', ''),
+                        'Left Image': row.get('left image', ''),
+                        'Center Image': row.get('center image', ''),
+                        'Right Image': row.get('right image', ''),
+                        'Target Side': row.get('target side', ''),
+                        'Condition': row.get('condition', ''),
+                        'Used': row.get('used', ''),
+                        'Trial End': to_int(row.get('trial end', 0) or row.get('trend', 0)),
+                        'Critical Onset': to_int(row.get('critical onset', 0) or row.get('critonset', 0))
+                    }))
 
         self.data = data
         self.calc_unused()
