@@ -855,7 +855,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.subject.events.remove_offset(self.subject.timecode_offsets.get_offset(0))
 
             # update timecode so stored framerate used to render timecodes (if a video is not loaded)
-            self.timecode = timecode.Timecode(self.subject['Framerate'])
+            framerate_string = '{:.2f}'.format(self.subject['Framerate']).replace('.00', '')
+            self.timecode = timecode.Timecode(framerate_string)
             self.timecode.drop_frame = False
 
             self.update_log()
