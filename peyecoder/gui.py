@@ -131,7 +131,7 @@ class MainWindow(QtWidgets.QMainWindow):
         splitter2.addWidget(container2)
         splitter2.addWidget(scrollable_message)
         splitter2.setCollapsible(0, False)
-        splitter2.setCollapsible(1, False)
+        splitter2.setCollapsible(1, True)
         splitter2.splitterMoved.connect(self.splitter_moved)
 
         self.setCentralWidget(splitter2)
