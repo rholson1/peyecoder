@@ -1,7 +1,7 @@
 
 from PySide2.QtWidgets import QWidget, QLabel, QPushButton, QSpinBox, QComboBox, \
     QRadioButton, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem, QCheckBox, \
-    QButtonGroup, QHeaderView
+    QButtonGroup, QHeaderView, QApplication
 
 from PySide2.QtGui import Qt
 from PySide2 import QtGui
@@ -275,3 +275,15 @@ class LogTable(QTableWidget):
             self.scrollToBottom()
         else:
             self.scrollToItem(self.item(row, 0), self.PositionAtCenter)
+
+    def copy_selection(self):
+        # copy text from selected rows, or if no rows are selected, the entire table, to the clipboard
+        rows = []
+        if self.has_selection():
+            for r in self.selected_rows():
+                rows.append('\t'.join([self.item(r, c).text() for c in range(self.columnCount())]))
+        else:
+            for r in range(self.rowCount()):
+                rows.append('\t'.join([self.item(r, c).text() for c in range(self.columnCount())]))
+        app = QApplication.instance()
+        app.clipboard().setText('\n'.join(rows))

@@ -624,6 +624,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.handle_keypress(event)
 
     def handle_keypress(self, e):
+        if e.matches(QtGui.QKeySequence.Copy):
+            self.logtable.copy_selection()
         if e.key() == Qt.Key_Right:
             self.next_frame()
         elif e.key() == Qt.Key_Left:
