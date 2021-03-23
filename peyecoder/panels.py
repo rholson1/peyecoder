@@ -29,7 +29,7 @@ class Prescreen(QWidget):
         self.trial_box = QSpinBox()
         self.trial_box.setFixedWidth(64)
         self.trial_box.setValue(1)
-        self.trial_box.setFocusPolicy(Qt.NoFocus)
+        # self.trial_box.setFocusPolicy(Qt.NoFocus)
 
         reason_label = QLabel('Reason:')
         self.reason_box = QComboBox()
@@ -109,7 +109,7 @@ class Code(QWidget):
         self.trial_box = QSpinBox()
         self.trial_box.setFixedWidth(64)
         self.trial_box.setValue(1)
-        self.trial_box.setFocusPolicy(Qt.NoFocus)
+        #self.trial_box.setFocusPolicy(Qt.NoFocus)
 
         trial_status_label = QLabel('Trial Status:')
         self.trial_status = QComboBox()
