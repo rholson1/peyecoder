@@ -573,9 +573,12 @@ class ReportDialog(QDialog):
 
 class ExportDialog(QDialog):
     """Dialog for creating CSV output"""
-    def __init__(self, parent):
+    def __init__(self, parent, bulk=False):
         super().__init__(parent)
-        self.setWindowTitle('Export CSV')
+        if bulk:
+            self.setWindowTitle('Export Multiple CSV')
+        else:
+            self.setWindowTitle('Export CSV')
 
         self.format_label = QLabel('Export Format:')
         self.wide_radio = QRadioButton('Wide (iCoder) Format')
@@ -593,8 +596,20 @@ class ExportDialog(QDialog):
         self.invert_radiogroup.addButton(self.invert_response_radio, id=INVERT_RESPONSE)
         self.invert_trial_order_radio.setChecked(True)  # default to iCoder-style inversion
 
+        if bulk:
+            self.output_label = QLabel('File Management:')
+            self.separate_radio = QRadioButton('One CSV for each VCX file')
+            self.combined_radio = QRadioButton('Combine into a single CSV file')
+            self.output_radiogroup = QButtonGroup()
+            self.output_radiogroup.addButton(self.separate_radio, id=1)
+            self.output_radiogroup.addButton(self.combined_radio, id=2)
+            self.separate_radio.setChecked(True)  # Default to individual output files
+
         self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
-        self.button_box.accepted.connect(self.export_csv)
+        if bulk:
+            self.button_box.accepted.connect(self.bulk_export_csv)
+        else:
+            self.button_box.accepted.connect(self.export_csv)
         self.button_box.rejected.connect(self.reject)
 
         layout = QVBoxLayout()
@@ -604,6 +619,10 @@ class ExportDialog(QDialog):
         layout.addWidget(self.invert_label)
         layout.addWidget(self.invert_trial_order_radio)
         layout.addWidget(self.invert_response_radio)
+        if bulk:
+            layout.addWidget(self.output_label)
+            layout.addWidget(self.separate_radio)
+            layout.addWidget(self.combined_radio)
         layout.addWidget(self.button_box)
         self.setLayout(layout)
 
@@ -612,6 +631,36 @@ class ExportDialog(QDialog):
         if filename != '':
             export_format = {1: 'wide', 2: 'long'}[self.format_radiogroup.checkedId()]
             export(filename, self.parent().subject, format=export_format, invert_rl=self.invert_radiogroup.checkedId())
+            self.accept()
+        else:
+            self.reject()
+
+    def bulk_export_csv(self):
+        # Select .vcx files to be processed
+        filenames, _ = QFileDialog.getOpenFileNames(self, "Select Data Files", filter="Data Files (*.vcx)")
+
+        export_format = {1: 'wide', 2: 'long'}[self.format_radiogroup.checkedId()]
+
+        if filenames:
+            # Select output directory or output file, depending on which kind of output is requested
+            if self.output_radiogroup.checkedId() == 1:
+                # individual files
+                output_directory = QFileDialog.getExistingDirectory(self, 'Select directory for CSV files')
+                for filename in filenames:
+                    subject = Subject()
+                    subject.from_plist(load_datafile(filename))
+                    output_filename = os.path.splitext(os.path.basename(filename))[0] + '.csv'
+                    output_filename = os.path.join(output_directory, output_filename)
+                    export(output_filename, subject, format=export_format,
+                           invert_rl=self.invert_radiogroup.checkedId())
+            else:
+                # concatenate output to a single CSV file
+                output_filename = get_save_filename(self, "Save Combined CSV File", filter="CSV Files (*.csv)", default_suffix='csv')
+                for idx, filename in enumerate(filenames):
+                    subject = Subject()
+                    subject.from_plist(load_datafile(filename))
+                    export(output_filename, subject, format=export_format,
+                           invert_rl=self.invert_radiogroup.checkedId(), file_mode='a' if idx > 0 else 'w')
             self.accept()
         else:
             self.reject()

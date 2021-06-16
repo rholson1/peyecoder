@@ -65,24 +65,26 @@ def compute_accuracy(target, response):
     return accuracy
 
 
-def export(filename, s: Subject, format='long', invert_rl=INVERT_TRIAL_ORDER):
+def export(filename, s: Subject, format='long', invert_rl=INVERT_TRIAL_ORDER, file_mode='w'):
     """Export subject data to a .csv file
     :param s: subject object
     :param filename: full path to the destination file
     :param format: 'wide' or 'long' format for the export file
     :param invert_rl: controls which L-R elements get inverted in output file
+    :param file_mode: mode used to open the output file.  Defaults to 'w'
     """
     if format == 'long':
-        export_long(filename, s, invert_rl)
+        export_long(filename, s, invert_rl, file_mode)
     elif format == 'wide':
-        export_wide(filename, s, invert_rl)
+        export_wide(filename, s, invert_rl, file_mode)
 
 
-def export_long(filename, s: Subject, invert_rl):
+def export_long(filename, s: Subject, invert_rl, file_mode='w'):
     """Export subject data to a .csv file
     :param s: subject object
     :param filename: full path to the destination file
     :param invert_rl: controls which L-R elements get inverted in output file
+    :param file_mode: mode used to open the output file.  Defaults to 'w'
     """
     fields = ('Sub Num', 'Months', 'Sex', 'Trial Order', 'Trial Number', 'Prescreen Notes',
               'Left Image', 'Center Image', 'Right Image', 'Target Side', 'Inversion', 'Condition',
@@ -161,11 +163,12 @@ def export_long(filename, s: Subject, invert_rl):
                 event_start = event_end
 
 
-def export_wide(filename, s: Subject, invert_rl):
+def export_wide(filename, s: Subject, invert_rl, file_mode='w'):
     """Export subject data to a .csv file in "wide" format (the old iCoder style)
     :param s: subject object
     :param filename: full path to the destination file
     :param invert_rl: controls which L-R elements get inverted in output file
+    :param file_mode: mode used to open the output file.  Defaults to 'w'
     """
     columns = ['Sub Num', 'Months', 'Sex', 'Order', 'Tr Num', 'Prescreen Notes',
                'L-image', 'C-image', 'R-image', 'Target Side', 'Target Image', 'Inversion', 'Condition',
@@ -196,7 +199,7 @@ def export_wide(filename, s: Subject, invert_rl):
 
     fields = columns + frame_columns
 
-    with open(filename, 'w', newline='') as f:
+    with open(filename, file_mode, newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fields, dialect='excel')
         writer.writeheader()
 

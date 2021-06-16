@@ -522,6 +522,10 @@ class MainWindow(QtWidgets.QMainWindow):
         export_action.setStatusTip('Export CSV')
         export_action.triggered.connect(self.export_csv)
 
+        bulk_export_action = QAction('Export &Multiple CSV', self)
+        bulk_export_action.setStatusTip('Export Multiple CSV')
+        bulk_export_action.triggered.connect(self.bulk_export_csv)
+
         # Create exit action
         exit_action = QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -565,6 +569,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(data_save_as_action)
         file_menu.addSeparator()
         file_menu.addAction(export_action)
+        file_menu.addAction(bulk_export_action)
         file_menu.addAction(reliability_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
@@ -888,6 +893,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def export_csv(self):
         """Open the export csv dialog"""
         export_dialog = ExportDialog(self)
+        export_dialog.exec_()
+
+    def bulk_export_csv(self):
+        """Open the export csv dialog"""
+        export_dialog = ExportDialog(self, bulk=True)
         export_dialog.exec_()
 
     def open_reliability_datafile(self):
