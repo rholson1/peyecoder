@@ -24,6 +24,7 @@ from peyecoder.export import export, INVERT_RESPONSE, INVERT_TRIAL_ORDER
 def get_save_filename(parent, caption, filter, default_suffix=''):
     """ Use a custom save dialog instead of the convenience function to support default suffix"""
     dialog = QFileDialog(parent, caption=caption, filter=filter)
+    dialog.setOption(QFileDialog.DontUseNativeDialog)
     dialog.setAcceptMode(QFileDialog.AcceptSave)
     dialog.setFileMode(QFileDialog.AnyFile)
     if default_suffix:
@@ -605,7 +606,8 @@ class ExportDialog(QDialog):
             self.output_radiogroup.addButton(self.combined_radio, id=2)
             self.separate_radio.setChecked(True)  # Default to individual output files
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Cancel)
+        self.button_box.addButton('Continue', QDialogButtonBox.AcceptRole)
         if bulk:
             self.button_box.accepted.connect(self.bulk_export_csv)
         else:
@@ -637,7 +639,10 @@ class ExportDialog(QDialog):
 
     def bulk_export_csv(self):
         # Select .vcx files to be processed
-        filenames, _ = QFileDialog.getOpenFileNames(self, "Select Data Files", filter="Data Files (*.vcx)")
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+
+        filenames, _ = QFileDialog.getOpenFileNames(self, "Select files to export", filter="Data Files (*.vcx)", options=options)
 
         export_format = {1: 'wide', 2: 'long'}[self.format_radiogroup.checkedId()]
 
@@ -645,7 +650,7 @@ class ExportDialog(QDialog):
             # Select output directory or output file, depending on which kind of output is requested
             if self.output_radiogroup.checkedId() == 1:
                 # individual files
-                output_directory = QFileDialog.getExistingDirectory(self, 'Select directory for CSV files')
+                output_directory = QFileDialog.getExistingDirectory(self, 'Select folder to save CSV files', options=options)
                 for filename in filenames:
                     subject = Subject()
                     subject.from_plist(load_datafile(filename))
@@ -655,7 +660,7 @@ class ExportDialog(QDialog):
                            invert_rl=self.invert_radiogroup.checkedId())
             else:
                 # concatenate output to a single CSV file
-                output_filename = get_save_filename(self, "Save Combined CSV File", filter="CSV Files (*.csv)", default_suffix='csv')
+                output_filename = get_save_filename(self, "Select filename for combined CSV File", filter="CSV Files (*.csv)", default_suffix='csv')
                 for idx, filename in enumerate(filenames):
                     subject = Subject()
                     subject.from_plist(load_datafile(filename))
