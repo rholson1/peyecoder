@@ -7,7 +7,7 @@ from PySide2.QtWidgets import QLabel, QPushButton, QSlider, QStyle, \
     QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
     QTabWidget, QSplitter, QScrollArea, QMessageBox
 from PySide2.QtGui import Qt
-from PySide2.QtCore import QObject, QEvent, Signal
+from PySide2.QtCore import QObject, QEvent, Signal, QSettings
 
 import timecode
 import os
@@ -77,6 +77,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.code_comparison_dialog = None
         self.report_dialog = None
         self.replace_dialog = None
+
+        self.settings = QSettings('Waisman', 'peyecoder')  # used for storing ffmpeg path
 
         self.subject = Subject(self)
 
@@ -208,7 +210,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.vid = None
         if hasattr(self, 'audio'):
             del self.audio
-        self.audio = VideoAudioPlayer()
+        self.audio = VideoAudioPlayer(self)
         self.audio_muted = False
         self.image_frame.clear()
 
@@ -840,15 +842,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.initialize_video()
             self.subject.events.remove_offset(self.subject.timecode_offsets.get_offset(0))
+            av_error = ''
             try:
                 self.audio.set_video_source(self.video_source, self.vid.frame_rate)
             except FileNotFoundError as e:
                 # probably missing ffmpeg
-                self.message_box.setText(e.strerror)
+                # update_log() will overwrite the message box, defer display until after update_log()
+                av_error = str(e)
             self.enable_controls()
 
             # may need to re-render timestamps of existing events if video framerate is not 30 fps
             self.update_log()
+
+            if av_error:
+                self.message_box.setText(av_error)
 
     def open_datafile(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open Data File", filter="Data Files (*.vcx)") #, QtCore.QDir.homePath())

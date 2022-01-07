@@ -18,15 +18,17 @@ def assert_ffmpeg():
     return True
 
 
-def extract_sound(video_filename):
-    """Given the name of a video, extract the sound to a .wav file, and return the filename of the new file."""
+def extract_sound(video_filename, ffmpeg_command):
+    """Given the name of a video, extract the sound to a .wav file, and return the filename of the new file.
+    ffmpeg_command should be the full path to ffmpeg (e.g., /usr/local/bin/ffmpeg)
+    """
 
     # Generate a filename for the temporary audio file
     with NamedTemporaryFile(suffix='.wav') as tf:
         wave_filename = tf.name
 
     # Extract the sound from the video using ffmpeg
-    subprocess.run(['ffmpeg', '-i', video_filename, '-vn', wave_filename],
+    subprocess.run([ffmpeg_command, '-i', video_filename, '-vn', wave_filename],
                    check=True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
     return wave_filename
 

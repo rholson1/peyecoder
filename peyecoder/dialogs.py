@@ -458,6 +458,9 @@ class SettingsDialog(QDialog):
         toggle_label = QLabel('Toggle Trial Status')
         self.toggle_box = KeyWidget()
 
+        ffmpeg_label = QLabel('ffmpeg command')
+        self.ffmpeg = QLineEdit()
+
         grid = QGridLayout()
         grid.addWidget(step_label, 0, 0)
         grid.addLayout(step_layout, 0, 1)
@@ -465,6 +468,8 @@ class SettingsDialog(QDialog):
         grid.addLayout(table_layout, 1, 1)
         grid.addWidget(toggle_label, 2, 0)
         grid.addWidget(self.toggle_box, 2, 1)
+        grid.addWidget(ffmpeg_label, 3, 0)
+        grid.addWidget(self.ffmpeg, 3, 1)
 
         self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
@@ -482,6 +487,7 @@ class SettingsDialog(QDialog):
         self.step_box.setText(str(d.get('Step', '')))
         self.key_table.from_dict(d['Response Keys'])
         self.toggle_box.set_key(d.get('Toggle Trial Status Key'))
+        self.ffmpeg.setText(self.parent().settings.value('ffmpeg', 'ffmpeg'))
 
     def save_settings(self):
         d = self.parent().subject.settings
@@ -493,6 +499,7 @@ class SettingsDialog(QDialog):
         # update code responses to reflect current response keys
         self.parent().code_tab.set_responses(list(d['Response Keys'].values()))
         self.parent().subject.dirty = True
+        self.parent().settings.setValue('ffmpeg', self.ffmpeg.text())
 
     def show(self):
         super().show()
