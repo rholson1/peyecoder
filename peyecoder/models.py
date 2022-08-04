@@ -311,12 +311,13 @@ class Event:
             self.trial, self.status, self.response, self.frame)
 
     def inverted_response(self):
-        if 'right' in self.response:
-            return self.response.replace('right', 'left')
-        elif 'left' in self.response:
-            return self.response.replace('left', 'right')
-        else:
-            return self.response
+        subs = {'Right': 'Left', 'Left': 'Right',
+                'right': 'left', 'left': 'right',
+                'RIGHT': 'LEFT', 'LEFT': 'RIGHT'}
+        for k, v in subs.items():
+            if k in self.response:
+                return self.response.replace(k, v)
+        return self.response
 
 
 # This version of Events only allows one event per timecode
