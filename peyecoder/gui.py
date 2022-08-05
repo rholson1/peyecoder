@@ -228,14 +228,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_dialog = None
         self.code_comparison_dialog = None
 
+        self.load_defaults()
+
         # reset coding controls
         self.prescreen_tab.trial_box.setValue(1)
         self.code_tab.trial_box.setValue(1)
+        self.code_tab.set_responses(list(self.subject.settings['Response Keys'].values()))
         self.tab_widget.setCurrentIndex(TAB_CODE)  # setting the current tab also updates the log table
 
         self.reset_info_panel()
-
-        self.load_defaults()
 
         self.open_subject_dialog()
 
