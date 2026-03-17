@@ -92,7 +92,7 @@ def export_long(filename, s: Subject, invert_rl, file_mode='w'):
 
     frame_rate = round(s['Framerate'])
 
-    with open(filename, 'w', newline='') as f:
+    with open(filename, file_mode, newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fields, dialect='excel')
         writer.writeheader()
 
