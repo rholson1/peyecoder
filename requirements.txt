@@ -1,5 +1,5 @@
 numpy==1.22.0
-opencv-python==4.5.1.48
+opencv-python==4.8.1.78
 Pillow==10.3.0
 PyAudio==0.2.11
 PySide2==5.15.2
