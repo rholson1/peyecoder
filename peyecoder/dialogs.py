@@ -1,11 +1,11 @@
-from PySide2 import QtGui
-from PySide2.QtWidgets import QLabel, QLineEdit, QPushButton, \
+from PySide6 import QtGui
+from PySide6.QtWidgets import QLabel, QLineEdit, QPushButton, \
     QHBoxLayout, QVBoxLayout, QGridLayout, QDialog, QFileDialog, \
     QRadioButton, QButtonGroup, QDialogButtonBox, QCheckBox, QPlainTextEdit, QFrame, \
     QTableWidget, QHeaderView, QTableWidgetItem, QSizePolicy, QMessageBox
 
-from PySide2.QtGui import Qt, QIntValidator, QRegExpValidator, QKeySequence
-from PySide2.QtCore import QRect, QRegExp, Signal
+from PySide6.QtGui import Qt, QIntValidator, QRegularExpressionValidator, QKeySequence
+from PySide6.QtCore import QRect, QRegularExpression, Signal
 
 from dateutil import parser
 from urllib.parse import urlparse
@@ -24,9 +24,9 @@ from peyecoder.export import export, INVERT_RESPONSE, INVERT_TRIAL_ORDER
 def get_save_filename(parent, caption, filter, default_suffix=''):
     """ Use a custom save dialog instead of the convenience function to support default suffix"""
     dialog = QFileDialog(parent, caption=caption, filter=filter)
-    dialog.setOption(QFileDialog.DontUseNativeDialog)
-    dialog.setAcceptMode(QFileDialog.AcceptSave)
-    dialog.setFileMode(QFileDialog.AnyFile)
+    dialog.setOption(QFileDialog.Option.DontUseNativeDialog)
+    dialog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+    dialog.setFileMode(QFileDialog.FileMode.AnyFile)
     if default_suffix:
         dialog.setDefaultSuffix(default_suffix)
     if dialog.exec_():
@@ -42,7 +42,7 @@ class FileDropTarget(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setAcceptDrops(True)
-        self.setFrameStyle(QFrame.Panel | QFrame.Sunken)
+        self.setFrameStyle(QFrame.Shape.Panel | QFrame.Shadow.Sunken)
         self.filename = ''
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent):
@@ -82,8 +82,8 @@ class SubjectDialog(QDialog):
         self.sex_radiogroup.addButton(self.female_radio, id=2)
         self.sex_radiogroup.buttonClicked.connect(self.sync_fields)
 
-        date_regexp = QRegExp('^[0-3]?[0-9]/[0-3]?[0-9]/(?:[0-9]{2})?[0-9]{2}$')
-        self.date_validator = QRegExpValidator(date_regexp)
+        date_regexp = QRegularExpression('^[0-3]?[0-9]/[0-3]?[0-9]/(?:[0-9]{2})?[0-9]{2}$')
+        self.date_validator = QRegularExpressionValidator(date_regexp)
 
         self.dob_label = QLabel('Date of Birth:')
         self.dob_box = QLineEdit()
@@ -130,7 +130,7 @@ class SubjectDialog(QDialog):
         self.notes_box = QPlainTextEdit()
         self.notes_box.textChanged.connect(self.sync_fields)
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         self.button_box.accepted.connect(self.accept)
 
         grid = QGridLayout()
@@ -256,7 +256,7 @@ class TimecodeDialog(QDialog):
         self.timecode_box.setInputMask('00:00:00:00')
         self.timecode_box.editingFinished.connect(self.set_timecode)
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
@@ -282,7 +282,7 @@ class OccluderDialog(QDialog):
         self.table = QTableWidget()
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(('x', 'y', 'w', 'h'))
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         self.add_row_button = QPushButton('Add')
         self.add_row_button.clicked.connect(self.add_row)
@@ -347,7 +347,7 @@ class KeyTableWidget(QTableWidget):
         super().__init__()
         self.setColumnCount(2)
         self.setHorizontalHeaderLabels(('Key', 'Response'))
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.verticalHeader().setVisible(False)
         self.data = []
         self.cellChanged.connect(self.cell_changed)
@@ -370,7 +370,7 @@ class KeyTableWidget(QTableWidget):
         self.setRowCount(len(self.data))
         for row, d in enumerate(self.data):
             item = QTableWidgetItem(d['text'])
-            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
             self.setItem(row, 0, item)
             self.setItem(row, 1, QTableWidgetItem(d['response']))
 
@@ -386,7 +386,7 @@ class KeyTableWidget(QTableWidget):
         row = self.rowCount()
         self.setRowCount(row + 1)
         item = QTableWidgetItem('')
-        item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
         self.setItem(row, 0, item)
         self.setItem(row, 1, QTableWidgetItem(''))
 
@@ -405,7 +405,7 @@ class KeyTableWidget(QTableWidget):
                 'response': self.item(row, 1).text()
             }
             item = QTableWidgetItem(text)
-            item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
             self.setItem(row, 0, item)
         else:
             super().keyPressEvent(event)
@@ -464,14 +464,14 @@ class SettingsDialog(QDialog):
         grid = QGridLayout()
         grid.addWidget(step_label, 0, 0)
         grid.addLayout(step_layout, 0, 1)
-        grid.addWidget(response_label, 1, 0, alignment=Qt.AlignTop)
+        grid.addWidget(response_label, 1, 0, alignment=Qt.AlignmentFlag.AlignTop)
         grid.addLayout(table_layout, 1, 1)
         grid.addWidget(toggle_label, 2, 0)
         grid.addWidget(self.toggle_box, 2, 1)
         grid.addWidget(ffmpeg_label, 3, 0)
         grid.addWidget(self.ffmpeg, 3, 1)
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
@@ -533,7 +533,7 @@ class CodeComparisonDialog(QDialog):
         self.logtable.setHorizontalHeaderLabels(self.logtable.Labels.Code)
 
         self.logtable.setMinimumWidth(400)
-        self.logtable.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.logtable.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
 
         #self.logtable.itemSelectionChanged.connect(self.select_code_row)
 
@@ -613,8 +613,8 @@ class ExportDialog(QDialog):
             self.output_radiogroup.addButton(self.combined_radio, id=2)
             self.separate_radio.setChecked(True)  # Default to individual output files
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Cancel)
-        self.button_box.addButton('Continue', QDialogButtonBox.AcceptRole)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
+        self.button_box.addButton('Continue', QDialogButtonBox.ButtonRole.AcceptRole)
         if bulk:
             self.button_box.accepted.connect(self.bulk_export_csv)
         else:
@@ -647,7 +647,7 @@ class ExportDialog(QDialog):
     def bulk_export_csv(self):
         # Select .vcx files to be processed
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
+        options |= QFileDialog.Option.DontUseNativeDialog
 
         filenames, _ = QFileDialog.getOpenFileNames(self, "Select files to export", filter="Data Files (*.vcx)", options=options)
 
@@ -689,7 +689,7 @@ class ReplaceDialog(QDialog):
         self.case_checkbox = QCheckBox('Match case')
         self.replace_label = QLabel('Replace:')
         self.replace_box = QLineEdit()
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
 
         find_layout = QHBoxLayout()
         find_layout.addWidget(self.find_label)
@@ -736,4 +736,4 @@ class ReplaceDialog(QDialog):
             self.parent().update_log()
             super().accept()
         else:
-            QMessageBox.warning(self, 'peyecoder', 'Both "find" and "replace" fields must contain text.', QMessageBox.Ok)
+            QMessageBox.warning(self, 'peyecoder', 'Both "find" and "replace" fields must contain text.', QMessageBox.StandardButton.Ok)

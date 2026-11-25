@@ -2,12 +2,12 @@ import sys
 import time
 import math
 
-from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.QtWidgets import QLabel, QPushButton, QSlider, QStyle, \
-    QHBoxLayout, QVBoxLayout, QSizePolicy, QAction, QGridLayout, QDialog, \
+from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6.QtWidgets import QLabel, QPushButton, QSlider, QStyle, \
+    QHBoxLayout, QVBoxLayout, QSizePolicy, QGridLayout, QDialog, \
     QTabWidget, QSplitter, QScrollArea, QMessageBox
-from PySide2.QtGui import Qt
-from PySide2.QtCore import QObject, QEvent, Signal, QSettings
+from PySide6.QtGui import Qt, QAction
+from PySide6.QtCore import QObject, QEvent, Signal, QSettings
 
 import timecode
 import os
@@ -51,7 +51,7 @@ class MainEventFilter(QObject):
         # if event.type() == QEvent.KeyPress:
         #     print('key pressed: {}, obj={}'.format(event.key(), obj))
 
-        if event.type() == QEvent.MouseButtonPress:
+        if event.type() == QEvent.Type.MouseButtonPress:
             if obj != LogTable:
                 self.parent().logtable.clearSelection()
 
@@ -63,13 +63,13 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, argv):
         super().__init__()
 
-        self.setFocusPolicy(Qt.ClickFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
         self.frame_delay = 0  # ms delay between frames when playing video (or maybe use framerate)
         self.state = STATE_PAUSED
 
         self.image_frame = QLabel()
-        self.image_frame.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.image_frame.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
 
         self.occluder_dialog = None
         self.subject_dialog = None
@@ -95,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
         info_grid = self.build_info_panel()
 
         self.message_box = QLabel()
-        self.message_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.message_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         self.message_box.setStyleSheet('color: red;')
 
         layout = QVBoxLayout()
@@ -114,10 +114,10 @@ class MainWindow(QtWidgets.QMainWindow):
         splitter.splitterMoved.connect(self.splitter_moved)
 
         scrollable_message = QScrollArea()
-        scrollable_message.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        scrollable_message.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scrollable_message.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        scrollable_message.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         scrollable_message.setWidgetResizable(True)
-        scrollable_message.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        scrollable_message.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         scrollable_message.setWidget(self.message_box)
 
         layout3 = QVBoxLayout()
@@ -129,7 +129,7 @@ class MainWindow(QtWidgets.QMainWindow):
         container2.setLayout(layout3)
 
         splitter2 = QSplitter()
-        splitter2.setOrientation(Qt.Vertical)
+        splitter2.setOrientation(Qt.Orientation.Vertical)
         splitter2.addWidget(container2)
         splitter2.addWidget(scrollable_message)
         splitter2.setCollapsible(0, False)
@@ -156,13 +156,13 @@ class MainWindow(QtWidgets.QMainWindow):
         proceed = True
         if self.subject.dirty:
             ret = QMessageBox.warning(self, 'Peyecoder', 'Do you want to save changes?',
-                                      QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
-                                      defaultButton=QMessageBox.Save)
-            if ret == QMessageBox.Save:
+                                      QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+                                      defaultButton=QMessageBox.StandardButton.Save)
+            if ret == QMessageBox.StandardButton.Save:
                 # save and, if successful, close
                 proceed = self.save_datafile()
             else:
-                proceed = ret != QMessageBox.Cancel
+                proceed = ret != QMessageBox.StandardButton.Cancel
 
         return proceed
 
@@ -244,20 +244,20 @@ class MainWindow(QtWidgets.QMainWindow):
         """ Create play button and position slider controls"""
         self.play_button = QPushButton()
         self.play_button.setEnabled(False)
-        self.play_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+        self.play_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
         self.play_button.clicked.connect(self.toggle_state)
-        self.play_button.setFocusPolicy(Qt.NoFocus)
+        self.play_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.mute_button = QPushButton()
-        self.mute_button.setIcon(self.style().standardIcon(QStyle.SP_MediaVolume))
+        self.mute_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaVolume))
         self.mute_button.clicked.connect(self.toggle_mute)
-        self.mute_button.setFocusPolicy(Qt.NoFocus)
+        self.mute_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        self.position_slider = JumpSlider(QtCore.Qt.Horizontal)
+        self.position_slider = JumpSlider(Qt.Orientation.Horizontal)
         self.position_slider.setRange(0, 0)
         self.position_slider.sliderMoved.connect(self.setPosition)
         self.position_slider.clicked.connect(self.setPosition)
-        self.position_slider.setFocusPolicy(Qt.NoFocus)
+        self.position_slider.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         control_layout = QHBoxLayout()
         control_layout.setContentsMargins(0, 0, 0, 0)
@@ -271,23 +271,23 @@ class MainWindow(QtWidgets.QMainWindow):
         # Widgets for stepping through video
         self.prev_button = QPushButton()
         self.prev_button.setEnabled(False)
-        self.prev_button.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipBackward))
+        self.prev_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaSkipBackward))
         self.prev_button.clicked.connect(self.prev_frame)
-        self.prev_button.setFocusPolicy(Qt.NoFocus)
+        self.prev_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.next_button = QPushButton()
         self.next_button.setEnabled(False)
-        self.next_button.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipForward))
+        self.next_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MediaSkipForward))
         self.next_button.clicked.connect(self.next_frame)
-        self.next_button.setFocusPolicy(Qt.NoFocus)
+        self.next_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.step_label = QLabel('Step: {}'.format(self.subject.settings['Step']))
 
         # Timecode display
         self.timecode_label = QLabel('00:00:00;00')
-        self.timecode_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.timecode_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         monospace_font = QtGui.QFont('nonexistent')
-        monospace_font.setStyleHint(QtGui.QFont.TypeWriter)
+        monospace_font.setStyleHint(QtGui.QFont.StyleHint.TypeWriter)
         self.timecode_label.setFont(monospace_font)
 
         step_layout = QtWidgets.QHBoxLayout()
@@ -302,30 +302,30 @@ class MainWindow(QtWidgets.QMainWindow):
         # build information display widgets for the bottom of the screen
         # info panel at bottom of screen
         subject_number_label = QLabel('Subject Number :')
-        subject_number_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        subject_number_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         self.subject_number_box = QLabel('')
-        self.subject_number_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.subject_number_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         order_label = QLabel('Trial Order :')
-        order_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        order_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         self.order_label_box = QLabel('')
-        self.order_label_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.order_label_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         unused_label = QLabel('Unused Trials :')
-        unused_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        unused_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         self.unused_box = QLabel('')
-        self.unused_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.unused_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         prescreened_label = QLabel('Prescreened out :')
-        prescreened_label.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        prescreened_label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         self.prescreened_box = QLabel('')
-        self.prescreened_box.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.prescreened_box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         info_grid = QGridLayout()
-        info_grid.addWidget(subject_number_label, 0, 0, alignment=Qt.AlignRight)
-        info_grid.addWidget(self.subject_number_box, 0, 1, alignment=Qt.AlignLeft)
-        info_grid.addWidget(order_label, 0, 3, alignment=Qt.AlignRight)
-        info_grid.addWidget(self.order_label_box, 0, 4, alignment=Qt.AlignLeft)
-        info_grid.addWidget(unused_label, 1, 0, alignment=Qt.AlignRight)
-        info_grid.addWidget(self.unused_box, 1, 1, alignment=Qt.AlignLeft)
-        info_grid.addWidget(prescreened_label, 1, 3, alignment=Qt.AlignRight)
-        info_grid.addWidget(self.prescreened_box, 1, 4, alignment=Qt.AlignLeft)
+        info_grid.addWidget(subject_number_label, 0, 0, alignment=Qt.AlignmentFlag.AlignRight)
+        info_grid.addWidget(self.subject_number_box, 0, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+        info_grid.addWidget(order_label, 0, 3, alignment=Qt.AlignmentFlag.AlignRight)
+        info_grid.addWidget(self.order_label_box, 0, 4, alignment=Qt.AlignmentFlag.AlignLeft)
+        info_grid.addWidget(unused_label, 1, 0, alignment=Qt.AlignmentFlag.AlignRight)
+        info_grid.addWidget(self.unused_box, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft)
+        info_grid.addWidget(prescreened_label, 1, 3, alignment=Qt.AlignmentFlag.AlignRight)
+        info_grid.addWidget(self.prescreened_box, 1, 4, alignment=Qt.AlignmentFlag.AlignLeft)
         info_grid.setColumnStretch(1, 2)
         info_grid.setColumnMinimumWidth(0, 160)
         info_grid.setColumnMinimumWidth(4, 200)
@@ -339,7 +339,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.logtable.setHorizontalHeaderLabels(self.logtable.Labels.Prescreen1)
 
         self.logtable.setMinimumWidth(400)
-        self.logtable.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.logtable.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
 
         self.logtable.itemSelectionChanged.connect(self.select_code_row)
 
@@ -355,9 +355,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.code_tab.set_responses(list(self.subject.settings['Response Keys'].values()))
         self.tab_widget.addTab(self.prescreen_tab, 'Prescreen')
         self.tab_widget.addTab(self.code_tab, 'Code')
-        self.tab_widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.tab_widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         self.tab_widget.currentChanged.connect(self.change_tab)
-        self.tab_widget.setFocusPolicy(Qt.NoFocus)
+        self.tab_widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         return self.tab_widget
 
@@ -485,39 +485,39 @@ class MainWindow(QtWidgets.QMainWindow):
 
         next_step_action = QAction('Skip &forward', self)
         next_step_action.setShortcut(']')
-        next_step_action.setShortcutContext(Qt.WidgetShortcut)  # prevent menu item from intercepting this keypress
+        next_step_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)  # prevent menu item from intercepting this keypress
         next_step_action.triggered.connect(self.next_step)
 
         prev_step_action = QAction('Skip &backward', self)
         prev_step_action.setShortcut('[')
-        prev_step_action.setShortcutContext(Qt.WidgetShortcut)
+        prev_step_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         prev_step_action.triggered.connect(self.prev_step)
 
         increment_action = QAction('Increment Trial', self)
         increment_action.setShortcut('+')
-        increment_action.setShortcutContext(Qt.WidgetShortcut)
+        increment_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         increment_action.triggered.connect(partial(self.change_trial, 1))
 
         decrement_action = QAction('Decrement Trial', self)
         decrement_action.setShortcut('-')
-        decrement_action.setShortcutContext(Qt.WidgetShortcut)
+        decrement_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         decrement_action.triggered.connect(partial(self.change_trial, -1))
 
         increment_selected_action = QAction('Increment Selected Trials', self)
         increment_selected_action.setShortcut('Alt++')
-        increment_selected_action.setShortcutContext(Qt.WidgetShortcut)
+        increment_selected_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         increment_selected_action.triggered.connect(partial(self.change_selected_trials, 1))
 
         decrement_selected_action = QAction('Decrement Selected Trials', self)
         decrement_selected_action.setShortcut('Alt+-')
-        decrement_selected_action.setShortcutContext(Qt.WidgetShortcut)
+        decrement_selected_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         decrement_selected_action.triggered.connect(partial(self.change_selected_trials, -1))
 
         help_url_action = QAction('Online Help', self)
         help_url_action.triggered.connect(self.open_help_url)
 
         about_box_action = QAction('About peyecoder', self)
-        about_box_action.setMenuRole(QAction.NoRole)
+        about_box_action.setMenuRole(QAction.MenuRole.NoRole)
         about_box_action.triggered.connect(self.show_about_box)
 
         export_action = QAction('E&xport CSV', self)
@@ -555,7 +555,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.open_settings_action = QAction('&Settings', self)
         self.open_settings_action.setShortcut('Ctrl+,')
         self.open_settings_action.setStatusTip('Open Settings Window')
-        self.open_settings_action.setMenuRole(QAction.NoRole)
+        self.open_settings_action.setMenuRole(QAction.MenuRole.NoRole)
         self.open_settings_action.triggered.connect(self.open_settings_dialog)
 
         self.open_replace_action = QAction('&Replace Responses', self)
@@ -632,44 +632,46 @@ class MainWindow(QtWidgets.QMainWindow):
         self.handle_keypress(event)
 
     def handle_keypress(self, e):
-        if e.matches(QtGui.QKeySequence.Copy):
+        if e.matches(QtGui.QKeySequence.StandardKey.Copy):
             self.logtable.copy_selection()
-        if e.key() == Qt.Key_Right:
+        if e.key() == Qt.Key.Key_Right:
             self.next_frame()
-        elif e.key() == Qt.Key_Left:
+        elif e.key() == Qt.Key.Key_Left:
             self.prev_frame()
-        elif e.key() == Qt.Key_Up:
+        elif e.key() == Qt.Key.Key_Up:
             # forward up/down keypresses to the log table
             self.logtable.keyPressEvent(e)
-        elif e.key() == Qt.Key_Down:
+        elif e.key() == Qt.Key.Key_Down:
             # forward up/down keypresses to the log table
             self.logtable.keyPressEvent(e)
-        elif e.key() == Qt.Key_BracketLeft:
+        elif e.key() == Qt.Key.Key_BracketLeft:
             self.prev_step()
-        elif e.key() == Qt.Key_BracketRight:
+        elif e.key() == Qt.Key.Key_BracketRight:
             self.next_step()
-        elif e.key() == Qt.Key_Space:
+        elif e.key() == Qt.Key.Key_Space:
             self.toggle_state()
-        elif e.key() in (Qt.Key_Plus, Qt.Key_Equal):
-            if e.modifiers() & Qt.AltModifier:
+        elif e.key() in (Qt.Key.Key_Plus, Qt.Key.Key_Equal):
+            if e.modifiers() & Qt.KeyboardModifier.AltModifier:
                 if self.logtable.has_selection():
                     self.change_selected_trials(1)
             else:
                 self.change_trial(1)
-        elif e.key() == Qt.Key_Minus:
-            if e.modifiers() & Qt.AltModifier:
+        elif e.key() == Qt.Key.Key_Minus:
+            if e.modifiers() & Qt.KeyboardModifier.AltModifier:
                 if self.logtable.has_selection():
                     self.change_selected_trials(-1)
             else:
                 self.change_trial(-1)
-        elif e.key() in (Qt.Key_Enter, Qt.Key_Return):
+        elif e.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return):
             if self.active_tab == TAB_PRESCREEN:
                 self.prescreen_tab.record_reason()
             else:
                 self.code_tab.record_event()
-        elif e.key() in (Qt.Key_Delete, Qt.Key_Backspace):
+        elif e.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
             # The order of operations is important here
             selected_rows = self.logtable.selected_rows()
+            if not selected_rows:
+                return
             next_row = max(selected_rows) - len(selected_rows) + 1  # identify the row after the last row to be deleted
             self.logtable.delete_selected()
             self.delete_data_rows(selected_rows)
@@ -781,17 +783,17 @@ class MainWindow(QtWidgets.QMainWindow):
         frame = self.vid.frame
         h, w, d = frame.shape
         bytes_per_line = w * d
-        image = QtGui.QImage(frame.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
+        image = QtGui.QImage(frame.data, w, h, bytes_per_line, QtGui.QImage.Format.Format_RGB888)
 
         # Draw occluders in image
         painter = QtGui.QPainter(image)
         for occluder in self.subject.occluders:
-            painter.fillRect(occluder, QtCore.Qt.gray)
+            painter.fillRect(occluder, QtCore.Qt.GlobalColor.gray)
         painter.end()
 
         # rescale image to fit window, keeping aspect ratio unchanged
         image_scaled = image.scaled(self.image_frame.width(), self.image_frame.height(),
-                                    QtCore.Qt.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation)
+                                    QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation)
 
         self.image_frame.setPixmap(QtGui.QPixmap.fromImage(image_scaled))
 
@@ -830,7 +832,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Prompt user to enter a timecode.  Return the corresponding frame number
         timecode_dialog = TimecodeDialog(self, self.timecode.framerate)
         retval = timecode_dialog.exec_()
-        if retval == QDialog.Accepted:
+        if retval == QDialog.DialogCode.Accepted:
             return timecode_dialog.timecode.frames - 1
         else:
             return 0
@@ -955,13 +957,13 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         if self.state == STATE_PLAYING:
             self.play_button.setIcon(
-                    self.style().standardIcon(QStyle.SP_MediaPlay))
+                    self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay))
             self.state = STATE_PAUSED
             if not self.audio_muted:
                 self.audio.stop()
         else:
             self.play_button.setIcon(
-                    self.style().standardIcon(QStyle.SP_MediaPause))
+                    self.style().standardIcon(QStyle.StandardPixmap.SP_MediaPause))
             self.state = STATE_PLAYING
             self.play()
             if not self.audio_muted:
@@ -971,11 +973,11 @@ class MainWindow(QtWidgets.QMainWindow):
         """ Callback for the audio mute button """
         self.audio_muted = not self.audio_muted
         if self.audio_muted:
-            icon_style = QStyle.SP_MediaVolumeMuted
+            icon_style = QStyle.StandardPixmap.SP_MediaVolumeMuted
             if self.state == STATE_PLAYING:
                 self.audio.stop()
         else:
-            icon_style = QStyle.SP_MediaVolume
+            icon_style = QStyle.StandardPixmap.SP_MediaVolume
             if self.state == STATE_PLAYING:
                 self.audio.play()
         self.mute_button.setIcon(self.style().standardIcon(icon_style))
@@ -1000,7 +1002,7 @@ class MainWindow(QtWidgets.QMainWindow):
             QMessageBox.warning(self, 'peyecoder', ('Unable to seek to the requested position in the audio.'
                                                     ' This likely means that an incorrect timecode was entered '
                                                     'when the video was opened.  Reload video and enter correct '
-                                                    'starting timestamp.'), QMessageBox.Ok)
+                                                    'starting timestamp.'), QMessageBox.StandardButton.Ok)
             self.subject.events.reset_offset()
 
         self.update_timecode()

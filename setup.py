@@ -26,12 +26,12 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.10',
     install_requires=[
         'numpy',
         'opencv-python-headless',
         'PyAudio',
-        'PySide2',
+        'PySide6',
         'python-dateutil',
         'sortedcontainers',
         'timecode'

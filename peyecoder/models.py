@@ -1,6 +1,6 @@
 # Data models for peyecoder
 
-from PySide2.QtCore import QRect, Qt
+from PySide6.QtCore import QRect, Qt
 
 from sortedcontainers import SortedDict, SortedList
 from functools import total_ordering
@@ -30,13 +30,13 @@ class Subject:
         self.trial_order = TrialOrder()
         self.settings = {  # Set some default values
             'Step': 10,
-            'Toggle Trial Status Key': int(Qt.Key_6),
+            'Toggle Trial Status Key': int(Qt.Key.Key_6),
             'Response Keys': {
-                int(Qt.Key_1): 'left',
-                int(Qt.Key_2): 'off',
-                int(Qt.Key_3): 'right',
-                int(Qt.Key_4): 'away',
-                int(Qt.Key_5): 'center'
+                int(Qt.Key.Key_1): 'left',
+                int(Qt.Key.Key_2): 'off',
+                int(Qt.Key.Key_3): 'right',
+                int(Qt.Key.Key_4): 'away',
+                int(Qt.Key.Key_5): 'center'
             }
         }
         self.dirty = False  # track existence of unsaved changes

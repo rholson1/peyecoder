@@ -1,10 +1,10 @@
 
-from PySide2.QtWidgets import QWidget, QLabel, QPushButton, QSpinBox, QComboBox, \
+from PySide6.QtWidgets import QWidget, QLabel, QPushButton, QSpinBox, QComboBox, \
     QRadioButton, QVBoxLayout, QHBoxLayout, QTableWidget, QTableWidgetItem, QCheckBox, \
-    QButtonGroup, QHeaderView, QApplication
+    QButtonGroup, QHeaderView, QApplication, QAbstractItemView
 
-from PySide2.QtGui import Qt
-from PySide2 import QtGui
+from PySide6.QtGui import Qt
+from PySide6 import QtGui
 
 from peyecoder.models import Reason, Event
 
@@ -27,20 +27,20 @@ class Prescreen(QWidget):
 
         trial_label = QLabel('Trial:')
         self.trial_box = QSpinBox()
-        self.trial_box.setFixedWidth(64)
+        self.trial_box.setFixedWidth(80)
         self.trial_box.setValue(1)
-        # self.trial_box.setFocusPolicy(Qt.NoFocus)
+        # self.trial_box.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         reason_label = QLabel('Reason:')
         self.reason_box = QComboBox()
         self.reason_box.addItems(self.REASONS)
-        self.reason_box.setFocusPolicy(Qt.NoFocus)
+        self.reason_box.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.code_radio = QRadioButton('Code')
         self.nocode_radio = QRadioButton('Do Not Code')
         self.code_radio.setChecked(True)
-        self.code_radio.setFocusPolicy(Qt.NoFocus)
-        self.nocode_radio.setFocusPolicy(Qt.NoFocus)
+        self.code_radio.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.nocode_radio.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         radio_layout = QVBoxLayout()
         radio_layout.addStretch()
@@ -54,15 +54,15 @@ class Prescreen(QWidget):
         self.record_button = QPushButton('Record Reason')
         self.record_button.clicked.connect(self.record_reason)
         self.record_button.setEnabled(False)
-        self.record_button.setFocusPolicy(Qt.NoFocus)
+        self.record_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.both_checkbox = QCheckBox('Display both coders')
-        self.both_checkbox.setFocusPolicy(Qt.NoFocus)
+        self.both_checkbox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.radio_primary = QRadioButton('Primary')
         self.radio_secondary = QRadioButton('Secondary')
         self.radio_primary.setChecked(True)
-        self.radio_primary.setFocusPolicy(Qt.NoFocus)
-        self.radio_secondary.setFocusPolicy(Qt.NoFocus)
+        self.radio_primary.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.radio_secondary.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         who_layout = QVBoxLayout()
         who_layout.addWidget(self.both_checkbox)
         who_layout.addWidget(self.radio_primary)
@@ -107,23 +107,23 @@ class Code(QWidget):
 
         trial_label = QLabel('Trial:')
         self.trial_box = QSpinBox()
-        self.trial_box.setFixedWidth(64)
+        self.trial_box.setFixedWidth(80)
         self.trial_box.setValue(1)
-        #self.trial_box.setFocusPolicy(Qt.NoFocus)
+        #self.trial_box.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         trial_status_label = QLabel('Trial Status:')
         self.trial_status = QComboBox()
         self.trial_status.addItems(self.TRIAL_STATUS)
-        self.trial_status.setFocusPolicy(Qt.NoFocus)
+        self.trial_status.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         response_label = QLabel('Response:')
         self.response_box = QComboBox()
-        self.response_box.setFocusPolicy(Qt.NoFocus)
+        self.response_box.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.record_button = QPushButton('Record Event')
         self.record_button.clicked.connect(self.record_event)
         self.record_button.setEnabled(False)
-        self.record_button.setFocusPolicy(Qt.NoFocus)
+        self.record_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         layout = QHBoxLayout()
         layout.addWidget(trial_label)
@@ -160,11 +160,11 @@ class LogTable(QTableWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.verticalHeader().setVisible(False)
-        self.setSelectionBehavior(QTableWidget.SelectRows)
-        self.setFocusPolicy(Qt.NoFocus)
-        self.setVerticalScrollMode(self.ScrollPerPixel)
+        self.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
 
         self.data = []  # list of iterables
 
@@ -187,7 +187,7 @@ class LogTable(QTableWidget):
         self.setRowCount(new_row + 1)
         for col, v in enumerate(entry):
             item = QTableWidgetItem(str(v))
-            item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)  # Do not want ItemIsEditable
+            item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)  # Do not want ItemIsEditable
             self.setItem(new_row, col, item)
 
     def load_data(self, data):
@@ -199,12 +199,12 @@ class LogTable(QTableWidget):
 
     def redden_selected(self):
         for item in self.selectedItems():
-            item.setForeground(Qt.red)
+            item.setForeground(Qt.GlobalColor.red)
 
     def redden_rows(self, rows):
         for r in rows:
             for c in range(self.columnCount()):
-                self.item(r, c).setForeground(Qt.red)
+                self.item(r, c).setForeground(Qt.GlobalColor.red)
 
     def delete_selected(self):
         """Delete selected rows"""
@@ -274,7 +274,7 @@ class LogTable(QTableWidget):
         if row == self.rowCount() - 1:
             self.scrollToBottom()
         else:
-            self.scrollToItem(self.item(row, 0), self.PositionAtCenter)
+            self.scrollToItem(self.item(row, 0), QAbstractItemView.ScrollHint.PositionAtCenter)
 
     def copy_selection(self):
         # copy text from selected rows, or if no rows are selected, the entire table, to the clipboard
